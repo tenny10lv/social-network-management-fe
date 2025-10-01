@@ -223,6 +223,7 @@ export const MENU_SIDEBAR: MenuConfig = [
     icon: Users,
     children: [
       { title: 'Get Started', path: '/network/get-started' },
+      { title: 'Proxies', path: '/network/proxies' },
       {
         title: 'User Cards',
         children: [
@@ -1022,6 +1023,7 @@ export const MENU_MEGA: MenuConfig = [
         title: 'General Pages',
         children: [
           { title: 'Get Started', icon: Flag, path: '/network/get-started' },
+          { title: 'Proxies', icon: Plug, path: '/network/proxies' },
           { title: 'Colleagues', icon: Users, path: '#', disabled: true },
           { title: 'Donators', icon: Heart, path: '#', disabled: true },
           { title: 'Leads', icon: Zap, path: '#', disabled: true },
@@ -1425,6 +1427,7 @@ export const MENU_MEGA_MOBILE: MenuConfig = [
         title: 'General Pages',
         children: [
           { title: 'Get Started', icon: Flag, path: '/network/get-started' },
+          { title: 'Proxies', icon: Plug, path: '/network/proxies' },
           { title: 'Colleagues', icon: Users, path: '#', disabled: true },
           { title: 'Donators', icon: Heart, path: '#', disabled: true },
           { title: 'Leads', icon: Zap, path: '#', disabled: true },

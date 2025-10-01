@@ -46,6 +46,7 @@ import { DefaultPage, Demo1DarkSidebarPage } from '@/pages/dashboards';
 import {
   NetworkAppRosterPage,
   NetworkAuthorPage,
+  NetworkProxiesPage,
   NetworkGetStartedPage,
   NetworkMarketAuthorsPage,
   NetworkMiniCardsPage,
@@ -290,6 +291,7 @@ export function AppRoutingSetup() {
             path="/network/get-started"
             element={<NetworkGetStartedPage />}
           />
+          <Route path="/network/proxies" element={<NetworkProxiesPage />} />
           <Route
             path="/network/user-cards/mini-cards"
             element={<NetworkMiniCardsPage />}
