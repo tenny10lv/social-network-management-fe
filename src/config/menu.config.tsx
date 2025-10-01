@@ -259,6 +259,11 @@ export const MENU_SIDEBAR: MenuConfig = [
     path: '/accounts',
   },
   {
+    title: 'Contents',
+    icon: FileText,
+    path: '/contents',
+  },
+  {
     title: 'Authentication',
     icon: ShieldUser,
     children: [
@@ -1714,6 +1719,12 @@ export const MENU_ROOT: MenuConfig = [
     icon: UserCheck,
     rootPath: '/accounts/',
     path: 'accounts',
+  },
+  {
+    title: 'Contents',
+    icon: FileText,
+    rootPath: '/contents/',
+    path: 'contents',
   },
   {
     title: 'Store - Client',
