@@ -55,11 +55,10 @@ interface AccountFormDialogProps {
 }
 
 const PLATFORM_OPTIONS = [
-  { value: 'facebook', label: 'Facebook' },
-  { value: 'instagram', label: 'Instagram' },
-  { value: 'tiktok', label: 'TikTok' },
-  { value: 'twitter', label: 'Twitter / X' },
-  { value: 'linkedin', label: 'LinkedIn' },
+  { value: 'FACEBOOK', label: 'Facebook' },
+  { value: 'INSTAGRAM', label: 'Instagram' },
+  { value: 'TIKTOK', label: 'TikTok' },
+  { value: 'THREADS', label: 'Threads' },
 ];
 
 const DEFAULT_VALUES: AccountFormValues = {
@@ -70,6 +69,8 @@ const DEFAULT_VALUES: AccountFormValues = {
   proxyId: null,
   isActive: true,
 };
+
+const NO_PROXY_OPTION_VALUE = '__no_proxy__';
 
 export function AccountFormDialog({
   mode,
@@ -326,14 +327,16 @@ export function AccountFormDialog({
                       <FormLabel>Proxy</FormLabel>
                       <FormControl>
                         <Select
-                          value={field.value ?? ''}
-                          onValueChange={(value) => field.onChange(value === '' ? null : value)}
+                          value={field.value ?? NO_PROXY_OPTION_VALUE}
+                          onValueChange={(value) =>
+                            field.onChange(value === NO_PROXY_OPTION_VALUE ? null : value)
+                          }
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="Select proxy" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">No proxy</SelectItem>
+                            <SelectItem value={NO_PROXY_OPTION_VALUE}>No proxy</SelectItem>
                             {(proxiesQuery.data ?? []).map((proxy) => (
                               <SelectItem key={proxy.id} value={proxy.id}>
                                 {proxy.name}

@@ -263,7 +263,7 @@ export function AccountModuleContent() {
   return (
     <>
       <Card>
-        <CardHeader>
+        <CardHeader className="py-4">
           <CardHeading>
             <CardTitle>Accounts</CardTitle>
             <span className="text-sm text-muted-foreground">
