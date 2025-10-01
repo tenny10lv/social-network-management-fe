@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { z } from 'zod';
 
 import {
@@ -54,7 +55,7 @@ async function parseJson(response: Response) {
 
   try {
     return JSON.parse(text);
-  } catch (error) {
+  } catch {
     throw new Error('Invalid server response.');
   }
 }

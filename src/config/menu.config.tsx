@@ -254,6 +254,11 @@ export const MENU_SIDEBAR: MenuConfig = [
     ],
   },
   {
+    title: 'Accounts',
+    icon: UserCheck,
+    path: '/accounts',
+  },
+  {
     title: 'Authentication',
     icon: ShieldUser,
     children: [
@@ -1066,6 +1071,11 @@ export const MENU_MEGA: MenuConfig = [
     ],
   },
   {
+    title: 'Accounts',
+    icon: UserCheck,
+    path: '/accounts',
+  },
+  {
     title: 'Authentication',
     children: [
       {
@@ -1698,6 +1708,12 @@ export const MENU_ROOT: MenuConfig = [
     rootPath: '/network/',
     path: 'network/get-started',
     childrenIndex: 4,
+  },
+  {
+    title: 'Accounts',
+    icon: UserCheck,
+    rootPath: '/accounts/',
+    path: 'accounts',
   },
   {
     title: 'Store - Client',
