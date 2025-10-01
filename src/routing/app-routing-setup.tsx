@@ -58,6 +58,7 @@ import {
   NetworkUserTableTeamCrewPage,
   NetworkVisitorsPage,
 } from '@/pages/network';
+import { AccountModulePage } from '@/pages/accounts';
 import {
   CampaignsCardPage,
   CampaignsListPage,
@@ -333,6 +334,7 @@ export function AppRoutingSetup() {
             path="/network/user-table/visitors"
             element={<NetworkVisitorsPage />}
           />
+          <Route path="/accounts" element={<AccountModulePage />} />
           <Route
             path="/auth/welcome-message"
             element={<AuthWelcomeMessagePage />}
