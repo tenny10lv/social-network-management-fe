@@ -59,6 +59,7 @@ import {
   NetworkVisitorsPage,
 } from '@/pages/network';
 import { AccountModulePage } from '@/pages/accounts';
+import { ContentModulePage } from '@/pages/contents';
 import {
   CampaignsCardPage,
   CampaignsListPage,
@@ -335,6 +336,7 @@ export function AppRoutingSetup() {
             element={<NetworkVisitorsPage />}
           />
           <Route path="/accounts" element={<AccountModulePage />} />
+          <Route path="/contents" element={<ContentModulePage />} />
           <Route
             path="/auth/welcome-message"
             element={<AuthWelcomeMessagePage />}
