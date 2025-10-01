@@ -1,9 +1,15 @@
-import { PropsWithChildren, useEffect, useState } from 'react';
+import { PropsWithChildren, useEffect, useRef, useState } from 'react';
 import { ApiAuthAdapter } from '@/auth/adapters/api-auth-adapter';
 import { SupabaseAdapter } from '@/auth/adapters/supabase-adapter';
 import { AuthContext } from '@/auth/context/auth-context';
 import * as authHelper from '@/auth/lib/helpers';
 import { AuthModel, UserModel } from '@/auth/lib/models';
+import {
+  DEFAULT_UNAUTHORIZED_MESSAGE,
+  UNAUTHORIZED_EVENT,
+  UnauthorizedEventDetail,
+} from '@/lib/api';
+import { toast } from 'sonner';
 
 // Define the Supabase Auth Provider
 export function AuthProvider({ children }: PropsWithChildren) {
@@ -13,6 +19,13 @@ export function AuthProvider({ children }: PropsWithChildren) {
     authHelper.getStoredUser(),
   );
   const [isAdmin, setIsAdmin] = useState(false);
+  const unauthorizedHandledRef = useRef(false);
+
+  useEffect(() => {
+    if (auth?.access_token) {
+      unauthorizedHandledRef.current = false;
+    }
+  }, [auth?.access_token]);
 
   // Check if user is admin
   useEffect(() => {
@@ -124,6 +137,45 @@ export function AuthProvider({ children }: PropsWithChildren) {
     saveAuth(undefined);
     setCurrentUser(undefined);
   };
+
+  const logoutRef = useRef(logout);
+
+  useEffect(() => {
+    logoutRef.current = logout;
+  }, [logout]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const handleUnauthorized = (event: Event) => {
+      if (unauthorizedHandledRef.current) {
+        return;
+      }
+
+      unauthorizedHandledRef.current = true;
+
+      const { detail } = event as CustomEvent<UnauthorizedEventDetail>;
+      const message = detail?.message || DEFAULT_UNAUTHORIZED_MESSAGE;
+
+      toast.error(message);
+
+      logoutRef.current?.();
+    };
+
+    window.addEventListener(
+      UNAUTHORIZED_EVENT,
+      handleUnauthorized as EventListener,
+    );
+
+    return () => {
+      window.removeEventListener(
+        UNAUTHORIZED_EVENT,
+        handleUnauthorized as EventListener,
+      );
+    };
+  }, []);
 
   return (
     <AuthContext.Provider

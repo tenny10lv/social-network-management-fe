@@ -4,6 +4,7 @@ import {
   removeStoredUser,
   setStoredUser,
 } from '@/auth/lib/helpers';
+import { buildApiUrl } from '@/lib/api';
 
 interface ApiLoginResponse {
   refreshToken: string;
@@ -34,29 +35,6 @@ interface ApiUser {
   createdAt?: string;
   updatedAt?: string;
   deletedAt?: string | null;
-}
-
-function buildApiBaseUrl(): string {
-  const baseUrl = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
-  const prefix = (import.meta.env.VITE_API_PREFIX || '').replace(/^\/+|\/+$/g, '');
-  const version = (import.meta.env.VITE_API_VERSION || '').replace(/^\/+|\/+$/g, '');
-
-  const segments = [baseUrl];
-  if (prefix) segments.push(prefix);
-  if (version) segments.push(version);
-
-  const url = segments.filter(Boolean).join('/');
-  if (!url) {
-    throw new Error('API base URL is not configured.');
-  }
-
-  return url;
-}
-
-function buildApiUrl(path: string): string {
-  const baseUrl = buildApiBaseUrl();
-  const sanitizedPath = path.replace(/^\/+/, '');
-  return `${baseUrl}/${sanitizedPath}`;
 }
 
 function mapUser(payload: ApiUser): UserModel {

@@ -1,5 +1,12 @@
 import { z } from 'zod';
 
+import {
+  buildApiUrl,
+  DEFAULT_UNAUTHORIZED_MESSAGE,
+  emitUnauthorized,
+  UnauthorizedError,
+} from '@/lib/api';
+
 export const proxyBaseSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   host: z.string().min(1, 'Host is required'),
@@ -53,13 +60,29 @@ async function parseJson(response: Response) {
 }
 
 async function handleResponse(response: Response) {
-  const payload = await parseJson(response);
+  let payload: any = null;
+
+  try {
+    payload = await parseJson(response);
+  } catch (error) {
+    if (response.status === 401) {
+      emitUnauthorized({ message: DEFAULT_UNAUTHORIZED_MESSAGE });
+      throw new UnauthorizedError(DEFAULT_UNAUTHORIZED_MESSAGE);
+    }
+
+    throw error instanceof Error ? error : new Error('Invalid server response.');
+  }
 
   if (!response.ok) {
     const message =
       (payload && (payload.message || payload.error)) ||
       response.statusText ||
       'Request failed. Please try again.';
+
+    if (response.status === 401) {
+      emitUnauthorized({ message: message || DEFAULT_UNAUTHORIZED_MESSAGE });
+      throw new UnauthorizedError(message || DEFAULT_UNAUTHORIZED_MESSAGE);
+    }
 
     throw new Error(message);
   }
@@ -125,14 +148,14 @@ export async function getProxies({
     limit: String(limit),
   });
 
-  const response = await fetch(`/api/v1/proxies?${params.toString()}`);
+  const response = await fetch(buildApiUrl(`proxies?${params.toString()}`));
   const payload = await handleResponse(response);
 
   return normalizeListPayload(payload, page, limit);
 }
 
 export async function getProxy(id: string): Promise<ProxyRecord> {
-  const response = await fetch(`/api/v1/proxies/${id}`);
+  const response = await fetch(buildApiUrl(`proxies/${id}`));
   const payload = await handleResponse(response);
 
   const data = payload?.data ?? payload;
@@ -141,7 +164,7 @@ export async function getProxy(id: string): Promise<ProxyRecord> {
 }
 
 export async function createProxy(data: ProxyFormValues): Promise<ProxyRecord> {
-  const response = await fetch(`/api/v1/proxies`, {
+  const response = await fetch(buildApiUrl('proxies'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -163,7 +186,7 @@ export async function updateProxy({
   id: string;
   data: ProxyFormValues;
 }): Promise<ProxyRecord> {
-  const response = await fetch(`/api/v1/proxies/${id}`, {
+  const response = await fetch(buildApiUrl(`proxies/${id}`), {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -179,7 +202,7 @@ export async function updateProxy({
 }
 
 export async function deleteProxy(id: string): Promise<void> {
-  const response = await fetch(`/api/v1/proxies/${id}`, {
+  const response = await fetch(buildApiUrl(`proxies/${id}`), {
     method: 'DELETE',
   });
 

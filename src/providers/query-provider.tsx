@@ -9,6 +9,7 @@ import {
 } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Alert, AlertIcon, AlertTitle } from '@/components/ui/alert';
+import { UnauthorizedError } from '@/lib/api';
 
 const QueryProvider = ({ children }: { children: ReactNode }) => {
   const [queryClient] = useState(
@@ -16,8 +17,14 @@ const QueryProvider = ({ children }: { children: ReactNode }) => {
       new QueryClient({
         queryCache: new QueryCache({
           onError: (error) => {
+            if (error instanceof UnauthorizedError) {
+              return;
+            }
+
             const message =
-              error.message || 'Something went wrong. Please try again.';
+              error instanceof Error
+                ? error.message
+                : 'Something went wrong. Please try again.';
 
             toast.custom(
               () => (
