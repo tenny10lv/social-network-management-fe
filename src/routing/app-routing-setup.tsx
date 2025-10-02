@@ -58,6 +58,7 @@ import {
   NetworkUserTableTeamCrewPage,
   NetworkVisitorsPage,
 } from '@/pages/network';
+import { BrowserContextsModulePage } from '@/pages/browser-contexts';
 import { AccountModulePage } from '@/pages/accounts';
 import { ContentModulePage } from '@/pages/contents';
 import { PublishingModulePage } from '@/pages/publishing';
@@ -338,6 +339,7 @@ export function AppRoutingSetup() {
           />
           <Route path="/accounts" element={<AccountModulePage />} />
           <Route path="/contents" element={<ContentModulePage />} />
+          <Route path="/browser-contexts" element={<BrowserContextsModulePage />} />
           <Route path="/publishing" element={<PublishingModulePage />} />
           <Route
             path="/auth/welcome-message"
