@@ -67,6 +67,11 @@ export const MENU_SIDEBAR: MenuConfig = [
     path: '/network/proxies',
   },
   {
+    title: 'Browser Contexts',
+    icon: Monitor,
+    path: '/browser-contexts',
+  },
+  {
     title: 'Accounts',
     icon: UserCheck,
     path: '/accounts',
@@ -587,6 +592,7 @@ export const MENU_MEGA: MenuConfig = [
             path: '/account/notifications',
           },
           { title: 'API Keys', icon: Key, path: '/account/api-keys' },
+          { title: 'Browser Contexts', icon: Monitor, path: '/browser-contexts' },
           { title: 'Publishing', icon: CalendarCheck, path: '/publishing' },
           { title: 'Appearance', icon: Eye, path: '/account/appearance' },
           {
@@ -997,6 +1003,7 @@ export const MENU_MEGA_MOBILE: MenuConfig = [
             path: '/account/notifications',
           },
           { title: 'API Keys', icon: Key, path: '/account/api-keys' },
+          { title: 'Browser Contexts', icon: Monitor, path: '/browser-contexts' },
           { title: 'Publishing', icon: CalendarCheck, path: '/publishing' },
           { title: 'Appearance', icon: Eye, path: '/account/appearance' },
           {
