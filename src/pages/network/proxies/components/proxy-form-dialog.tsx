@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState, useId } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { RiCheckboxCircleFill } from '@remixicon/react';
@@ -28,6 +28,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import {
   ProxyFormValues,
   ProxyRecord,
@@ -65,13 +66,77 @@ export function ProxyFormDialog({
     () => (mode === 'create' ? proxyCreateSchema : proxyBaseSchema),
     [mode],
   );
+  const proxyStringInputId = useId();
 
   const form = useForm<ProxyFormValues>({
     resolver: zodResolver(schema),
     defaultValues: DEFAULT_VALUES,
   });
 
-  const { reset } = form;
+  const { reset, setValue } = form;
+  const [proxyString, setProxyString] = useState('');
+
+  const parseAndApplyProxyString = useCallback(
+    (rawValue: string) => {
+      const normalized = rawValue.trim();
+
+      if (!normalized) {
+        return;
+      }
+
+      const parts = normalized.split(':');
+
+      if (parts.length < 4) {
+        return;
+      }
+
+      const [hostPart, portPart, usernamePart, ...passwordParts] = parts;
+      const host = hostPart?.trim();
+      const portString = portPart?.trim();
+      const username = usernamePart?.trim();
+      const password = passwordParts.join(':').trim();
+
+      if (!host || !portString || !username || !password) {
+        return;
+      }
+
+      const port = Number(portString);
+
+      if (!Number.isInteger(port) || port <= 0) {
+        return;
+      }
+
+      setValue('host', host, {
+        shouldDirty: true,
+        shouldTouch: true,
+        shouldValidate: true,
+      });
+      setValue('port', port, {
+        shouldDirty: true,
+        shouldTouch: true,
+        shouldValidate: true,
+      });
+      setValue('username', username, {
+        shouldDirty: true,
+        shouldTouch: true,
+        shouldValidate: true,
+      });
+      setValue('password', password, {
+        shouldDirty: true,
+        shouldTouch: true,
+        shouldValidate: true,
+      });
+    },
+    [setValue],
+  );
+
+  const handleProxyStringInput = useCallback(
+    (value: string) => {
+      setProxyString(value);
+      parseAndApplyProxyString(value);
+    },
+    [parseAndApplyProxyString],
+  );
 
   const {
     data: proxy,
@@ -88,6 +153,7 @@ export function ProxyFormDialog({
     if (open) {
       if (mode === 'create') {
         reset(DEFAULT_VALUES);
+        setProxyString('');
       }
     }
   }, [mode, open, reset]);
@@ -102,6 +168,7 @@ export function ProxyFormDialog({
         password: '',
         isActive: proxy.isActive,
       });
+      setProxyString('');
     }
   }, [proxy, mode, reset, open]);
 
@@ -254,6 +321,24 @@ export function ProxyFormDialog({
                     </FormItem>
                   )}
                 />
+                <div className="flex flex-col gap-2.5">
+                  <Label htmlFor={proxyStringInputId}>Proxy String</Label>
+                  <Input
+                    id={proxyStringInputId}
+                    placeholder="IP:PORT:USER:PASS"
+                    autoComplete="off"
+                    value={proxyString}
+                    onChange={(event) => handleProxyStringInput(event.target.value)}
+                    onPaste={(event) => {
+                      event.preventDefault();
+                      const pastedText = event.clipboardData?.getData('text') ?? '';
+                      handleProxyStringInput(pastedText);
+                    }}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Paste to auto-fill host, port, username, and password.
+                  </p>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <FormField
                     control={form.control}

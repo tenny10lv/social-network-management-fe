@@ -126,6 +126,17 @@ export function ContentFormDialog({ mode, contentId, open, onOpenChange }: Conte
     maxFiles: 10,
   });
 
+  const {
+    clearFiles,
+    openFileDialog,
+    handleDragEnter,
+    handleDragLeave,
+    handleDragOver,
+    handleDrop,
+    getInputProps,
+    removeFile,
+  } = uploadActions;
+
   const newMediaFiles = useMemo(
     () =>
       uploadState.files
@@ -138,9 +149,9 @@ export function ContentFormDialog({ mode, contentId, open, onOpenChange }: Conte
     if (open && mode === 'create') {
       reset(DEFAULT_VALUES);
       setExistingMedia([]);
-      uploadActions.clearFiles();
+      clearFiles();
     }
-  }, [mode, open, reset, uploadActions]);
+  }, [mode, open, reset, clearFiles]);
 
   useEffect(() => {
     if (contentQuery.data && mode === 'edit' && open) {
@@ -156,16 +167,16 @@ export function ContentFormDialog({ mode, contentId, open, onOpenChange }: Conte
       });
 
       setExistingMedia(record.mediaUrls ?? []);
-      uploadActions.clearFiles();
+      clearFiles();
     }
-  }, [contentQuery.data, mode, open, reset, uploadActions]);
+  }, [contentQuery.data, mode, open, reset, clearFiles]);
 
   useEffect(() => {
     if (!open) {
       setExistingMedia([]);
-      uploadActions.clearFiles();
+      clearFiles();
     }
-  }, [open, uploadActions]);
+  }, [open, clearFiles]);
 
   const createMutation = useMutation({
     mutationFn: (values: ContentSubmitPayload) => createContent(values),
@@ -450,7 +461,7 @@ export function ContentFormDialog({ mode, contentId, open, onOpenChange }: Conte
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={uploadActions.openFileDialog}
+                    onClick={openFileDialog}
                     disabled={isLoadingRecord || isSubmitting}
                   >
                     <Upload className="mr-2 size-4" />
@@ -463,13 +474,13 @@ export function ContentFormDialog({ mode, contentId, open, onOpenChange }: Conte
                     uploadState.isDragging ? 'border-primary bg-primary/5' : 'border-muted-foreground/30',
                     isLoadingRecord || isSubmitting ? 'pointer-events-none opacity-70' : '',
                   )}
-                  onDragEnter={uploadActions.handleDragEnter}
-                  onDragOver={uploadActions.handleDragOver}
-                  onDragLeave={uploadActions.handleDragLeave}
-                  onDrop={uploadActions.handleDrop}
+                  onDragEnter={handleDragEnter}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
                   role="presentation"
                 >
-                  <input {...uploadActions.getInputProps({ multiple: true })} />
+                  <input {...getInputProps({ multiple: true })} />
                   <div className="text-sm text-muted-foreground">
                     Drag and drop files here, or click Upload. Images and videos are supported.
                   </div>
@@ -558,7 +569,7 @@ export function ContentFormDialog({ mode, contentId, open, onOpenChange }: Conte
                               type="button"
                               variant="ghost"
                               size="sm"
-                              onClick={() => uploadActions.removeFile(file.id)}
+                              onClick={() => removeFile(file.id)}
                               disabled={isLoadingRecord || isSubmitting}
                             >
                               <Trash2 className="size-4" />

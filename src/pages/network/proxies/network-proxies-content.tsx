@@ -210,8 +210,8 @@ export function NetworkProxiesContent() {
   return (
     <>
       <Card>
-        <CardHeader>
-          <CardHeading>
+        <CardHeader className="py-4">
+          <CardHeading >
             <CardTitle>Proxies</CardTitle>
             <span className="text-sm text-muted-foreground">
               Manage and configure outbound proxy servers.
