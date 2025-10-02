@@ -1,6 +1,7 @@
 import { AUTH_LOCAL_STORAGE_KEY, getAuth, removeAuth, setAuth } from '@/auth/lib/helpers';
 import { AuthModel } from '@/auth/lib/models';
 import { DEFAULT_UNAUTHORIZED_MESSAGE, buildApiBaseUrl, buildApiUrl, emitUnauthorized } from '@/lib/api';
+import { toast } from 'sonner';
 
 type LoginResponsePayload = {
   token?: string;
@@ -148,6 +149,25 @@ export function initializeHttpInterceptors() {
 
     if (response.status === 401 && requestUrl.split('?')[0] !== loginUrl) {
       emitUnauthorized({ message: DEFAULT_UNAUTHORIZED_MESSAGE });
+    }
+
+    if (response.status === 422) {
+      try {
+        const clone = response.clone();
+        const payload = await clone.json();
+
+        if (payload?.status === 422 && payload?.errorMessages && typeof payload.errorMessages === 'object') {
+          const messages = Object.values(payload.errorMessages as Record<string, unknown>)
+            .flatMap((value) => (Array.isArray(value) ? value : [value]))
+            .filter((value): value is string => typeof value === 'string' && value.trim().length > 0);
+
+          messages.forEach((message) => {
+            toast.error(message);
+          });
+        }
+      } catch (error) {
+        console.error('Failed to handle validation error response', error);
+      }
     }
 
     return response;
