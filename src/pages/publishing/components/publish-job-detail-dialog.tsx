@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dialog';
 import { Alert, AlertIcon, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { Code } from '@/components/ui/code';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { getPublishJob, PublishJobRecord } from '../api';
@@ -155,8 +156,19 @@ export function PublishJobDetailDialog({ jobId, open, onOpenChange }: PublishJob
               </div>
               <div>
                 <div className="text-xs text-muted-foreground uppercase">Platform response</div>
-                <ScrollArea className="mt-2 max-h-64 rounded-md border border-border bg-muted/30 p-3">
-                  <pre className="text-xs whitespace-pre-wrap break-words font-mono">{platformResponse}</pre>
+                <ScrollArea className="mt-2 max-h-64">
+                  <Code
+                    asChild
+                    variant="outline"
+                    size="sm"
+                    className="block w-full rounded-md"
+                    showCopyButton
+                    copyText={platformResponse}
+                  >
+                    <pre className="max-h-64 w-full whitespace-pre-wrap break-words font-mono text-xs leading-5">
+                      {platformResponse}
+                    </pre>
+                  </Code>
                 </ScrollArea>
               </div>
             </div>

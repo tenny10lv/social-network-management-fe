@@ -356,12 +356,16 @@ export function PublishingModuleContent() {
                           <DropdownMenuItem onClick={() => setDetailJobId(job.id)}>
                             View Detail
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => openRetryConfirm(job.id)}>
+                          <DropdownMenuItem
+                            onClick={() => openRetryConfirm(job.id)}
+                            disabled={isMutating}
+                          >
                             Retry
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             variant="destructive"
                             onClick={() => openCancelConfirm(job.id)}
+                            disabled={isMutating}
                           >
                             Cancel
                           </DropdownMenuItem>
