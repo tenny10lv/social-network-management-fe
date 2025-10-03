@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { RiCheckboxCircleFill } from '@remixicon/react';
 import { AlertCircle, LoaderCircle, ServerCog } from 'lucide-react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
 import {
   Dialog,
@@ -55,6 +55,44 @@ const DEFAULT_VALUES: ProxyFormValues = {
   isActive: true,
 };
 
+const composeProxyString = ({
+  host,
+  port,
+  username,
+  password,
+}: {
+  host?: string | null;
+  port?: number | string | null;
+  username?: string | null;
+  password?: string | null;
+}) => {
+  const trimmedHost = typeof host === 'string' ? host.trim() : host ? String(host) : '';
+  const trimmedUsername =
+    typeof username === 'string' ? username.trim() : username ? String(username) : '';
+  const trimmedPassword =
+    typeof password === 'string' ? password.trim() : password ? String(password) : '';
+
+  let portSegment = '';
+
+  if (typeof port === 'number') {
+    portSegment = Number.isFinite(port) ? String(port) : '';
+  } else if (typeof port === 'string') {
+    portSegment = port.trim();
+  }
+
+  if (!trimmedHost && !trimmedUsername && !trimmedPassword && !portSegment) {
+    return '';
+  }
+
+  const segments = [trimmedHost, portSegment, trimmedUsername, trimmedPassword];
+
+  while (segments.length > 1 && segments[segments.length - 1] === '') {
+    segments.pop();
+  }
+
+  return segments.join(':');
+};
+
 export function ProxyFormDialog({
   mode,
   proxyId,
@@ -75,60 +113,92 @@ export function ProxyFormDialog({
 
   const { reset, setValue } = form;
   const [proxyString, setProxyString] = useState('');
+  const [initialPassword, setInitialPassword] = useState('');
+  const watchedHost = useWatch({ control: form.control, name: 'host' });
+  const watchedPort = useWatch({ control: form.control, name: 'port' });
+  const watchedUsername = useWatch({ control: form.control, name: 'username' });
+  const watchedPassword = useWatch({ control: form.control, name: 'password' });
 
   const parseAndApplyProxyString = useCallback(
     (rawValue: string) => {
       const normalized = rawValue.trim();
+      const updateOptions = {
+        shouldDirty: true,
+        shouldTouch: true,
+        shouldValidate: true,
+      } as const;
 
       if (!normalized) {
+        setValue('host', '', updateOptions);
+        setValue('port', undefined as unknown as ProxyFormValues['port'], updateOptions);
+        setValue('username', '', updateOptions);
+        setValue('password', '', updateOptions);
         return;
       }
 
       const parts = normalized.split(':');
+      const [hostPart = '', portPart = '', usernamePart = '', ...passwordParts] = parts;
 
-      if (parts.length < 4) {
-        return;
-      }
-
-      const [hostPart, portPart, usernamePart, ...passwordParts] = parts;
-      const host = hostPart?.trim();
-      const portString = portPart?.trim();
-      const username = usernamePart?.trim();
+      const host = hostPart.trim();
+      const portString = portPart.trim();
+      const username = usernamePart.trim();
       const password = passwordParts.join(':').trim();
+      const parsedPort = Number(portString);
+      const sanitizedPort =
+        portString === '' || !Number.isFinite(parsedPort) || parsedPort <= 0
+          ? undefined
+          : parsedPort;
 
-      if (!host || !portString || !username || !password) {
-        return;
+      setValue('host', host, updateOptions);
+      setValue('username', username, updateOptions);
+      setValue('password', password, updateOptions);
+      if (typeof sanitizedPort === 'number') {
+        setValue('port', sanitizedPort, updateOptions);
+      } else {
+        setValue('port', undefined as unknown as ProxyFormValues['port'], updateOptions);
       }
-
-      const port = Number(portString);
-
-      if (!Number.isInteger(port) || port <= 0) {
-        return;
-      }
-
-      setValue('host', host, {
-        shouldDirty: true,
-        shouldTouch: true,
-        shouldValidate: true,
-      });
-      setValue('port', port, {
-        shouldDirty: true,
-        shouldTouch: true,
-        shouldValidate: true,
-      });
-      setValue('username', username, {
-        shouldDirty: true,
-        shouldTouch: true,
-        shouldValidate: true,
-      });
-      setValue('password', password, {
-        shouldDirty: true,
-        shouldTouch: true,
-        shouldValidate: true,
-      });
     },
     [setValue],
   );
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    const hasDefaultPortOnly =
+      (!watchedHost || String(watchedHost).trim() === '') &&
+      (!watchedUsername || String(watchedUsername).trim() === '') &&
+      (!watchedPassword || String(watchedPassword).trim() === '') &&
+      (typeof watchedPort === 'number'
+        ? watchedPort === DEFAULT_VALUES.port
+        : String(watchedPort ?? '').trim() === String(DEFAULT_VALUES.port));
+
+    if (hasDefaultPortOnly) {
+      if (proxyString !== '') {
+        setProxyString('');
+      }
+      return;
+    }
+
+    const composed = composeProxyString({
+      host: watchedHost,
+      port: watchedPort,
+      username: watchedUsername,
+      password: watchedPassword,
+    });
+
+    if (composed !== proxyString) {
+      setProxyString(composed);
+    }
+  }, [
+    open,
+    watchedHost,
+    watchedPort,
+    watchedUsername,
+    watchedPassword,
+    proxyString,
+  ]);
 
   const handleProxyStringInput = useCallback(
     (value: string) => {
@@ -154,6 +224,7 @@ export function ProxyFormDialog({
       if (mode === 'create') {
         reset(DEFAULT_VALUES);
         setProxyString('');
+        setInitialPassword('');
       }
     }
   }, [mode, open, reset]);
@@ -165,10 +236,23 @@ export function ProxyFormDialog({
         host: proxy.host,
         port: proxy.port,
         username: proxy.username ?? '',
-        password: '',
+        password:
+          'password' in proxy && typeof proxy.password === 'string'
+            ? proxy.password
+            : '',
         isActive: proxy.isActive,
       });
-      setProxyString('');
+      const existingPassword =
+        'password' in proxy && typeof proxy.password === 'string' ? proxy.password : '';
+      setInitialPassword(existingPassword ?? '');
+      setProxyString(
+        composeProxyString({
+          host: proxy.host,
+          port: proxy.port,
+          username: proxy.username ?? '',
+          password: existingPassword,
+        }),
+      );
     }
   }, [proxy, mode, reset, open]);
 
@@ -268,10 +352,12 @@ export function ProxyFormDialog({
   const isSubmitting = mutation.isPending;
 
   const onSubmit = (values: ProxyFormValues) => {
+    const shouldOmitPassword =
+      mode === 'edit' && (!values.password || values.password === initialPassword);
+
     const payload = {
       ...values,
-      password:
-        mode === 'edit' && !values.password ? undefined : values.password,
+      password: shouldOmitPassword ? undefined : values.password,
     } as ProxyFormValues;
 
     mutation.mutate(payload);

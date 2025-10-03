@@ -144,22 +144,7 @@ export function ContentModuleContent() {
       );
       setIsConfirmOpen(false);
       setSelectedContentId(null);
-    },
-    onError: (mutationError: Error) => {
-      toast.custom(
-        (t) => (
-          <Alert variant="mono" icon="destructive" onClose={() => toast.dismiss(t)}>
-            <AlertIcon>
-              <AlertCircle className="size-5" />
-            </AlertIcon>
-            <AlertTitle>{mutationError.message}</AlertTitle>
-          </Alert>
-        ),
-        {
-          duration: 5000,
-        },
-      );
-    },
+    }
   });
 
   const data = contentsQuery.data;

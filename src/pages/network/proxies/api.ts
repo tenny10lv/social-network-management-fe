@@ -31,6 +31,7 @@ export type ProxyRecord = {
   host: string;
   port: number;
   username?: string | null;
+  password?: string | null;
   isActive: boolean;
   createdAt?: string | null;
   updatedAt?: string | null;
@@ -97,6 +98,7 @@ const normalizeProxyRecord = (record: any): ProxyRecord => ({
   host: String(record.host ?? ''),
   port: Number(record.port ?? 0),
   username: record.username ?? record.user ?? record.login ?? null,
+  password: record.password ?? record.pass ?? null,
   isActive: Boolean(
     typeof record.isActive === 'boolean'
       ? record.isActive

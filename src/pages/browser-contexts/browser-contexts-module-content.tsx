@@ -71,6 +71,7 @@ import {
 import { BrowserContextFormDialog } from './components/browser-context-form-dialog';
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50];
+const ALL_ACCOUNTS_FILTER = 'all';
 
 const formatDate = (value?: string | null) => {
   if (!value) {
@@ -110,7 +111,7 @@ export function BrowserContextsModuleContent() {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(PAGE_SIZE_OPTIONS[0]);
-  const [accountFilter, setAccountFilter] = useState('');
+  const [accountFilter, setAccountFilter] = useState(ALL_ACCOUNTS_FILTER);
   const [showActiveOnly, setShowActiveOnly] = useState(false);
   const [searchValue, setSearchValue] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -139,13 +140,15 @@ export function BrowserContextsModuleContent() {
     staleTime: 5 * 60 * 1000,
   });
 
+  const selectedAccountId = accountFilter === ALL_ACCOUNTS_FILTER ? null : accountFilter;
+
   const contextsQuery = useQuery({
     queryKey: [
       BROWSER_CONTEXTS_QUERY_KEY,
       {
         page,
         limit,
-        accountId: accountFilter || null,
+        accountId: selectedAccountId,
         isActive: showActiveOnly ? true : null,
         search: debouncedSearch || null,
       },
@@ -154,7 +157,7 @@ export function BrowserContextsModuleContent() {
       getBrowserContexts({
         page,
         limit,
-        accountId: accountFilter || undefined,
+        accountId: selectedAccountId ?? undefined,
         isActive: showActiveOnly ? true : undefined,
         search: debouncedSearch || undefined,
       }),
@@ -305,7 +308,7 @@ export function BrowserContextsModuleContent() {
         </CardHeader>
         <CardContent className="pt-0">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:gap-4">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:gap-4 py-3">
               <div className="flex flex-col gap-1">
                 <Label htmlFor="browser-context-account-filter">Account</Label>
                 <Select
@@ -323,7 +326,7 @@ export function BrowserContextsModuleContent() {
                     />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All accounts</SelectItem>
+                    <SelectItem value={ALL_ACCOUNTS_FILTER}>All accounts</SelectItem>
                     {accountOptions.map((option: BrowserContextAccountOption) => (
                       <SelectItem key={option.id} value={option.id}>
                         {option.name}

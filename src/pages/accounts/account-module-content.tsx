@@ -4,7 +4,6 @@ import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { RiCheckboxCircleFill } from '@remixicon/react';
 import {
-  AlertCircle,
   EllipsisVertical,
   LoaderCircle,
   LogIn,
@@ -101,7 +100,6 @@ export function AccountModuleContent() {
   const accountsQuery = useQuery({
     queryKey: ['accounts', page, limit],
     queryFn: () => getAccounts({ page, limit }),
-    keepPreviousData: true,
   });
 
   const deleteMutation = useMutation({
@@ -124,21 +122,6 @@ export function AccountModuleContent() {
       setIsConfirmOpen(false);
       setSelectedAccountId(null);
     },
-    onError: (mutationError: Error) => {
-      toast.custom(
-        (t) => (
-          <Alert variant="mono" icon="destructive" onClose={() => toast.dismiss(t)}>
-            <AlertIcon>
-              <AlertCircle className="size-5" />
-            </AlertIcon>
-            <AlertTitle>{mutationError.message}</AlertTitle>
-          </Alert>
-        ),
-        {
-          duration: 5000,
-        },
-      );
-    },
   });
 
   const loginMutation = useMutation({
@@ -159,21 +142,6 @@ export function AccountModuleContent() {
         ),
         {
           duration: 4000,
-        },
-      );
-    },
-    onError: (mutationError: Error) => {
-      toast.custom(
-        (t) => (
-          <Alert variant="mono" icon="destructive" onClose={() => toast.dismiss(t)}>
-            <AlertIcon>
-              <AlertCircle className="size-5" />
-            </AlertIcon>
-            <AlertTitle>{mutationError.message}</AlertTitle>
-          </Alert>
-        ),
-        {
-          duration: 5000,
         },
       );
     },

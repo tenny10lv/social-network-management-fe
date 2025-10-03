@@ -82,6 +82,20 @@ const isTokenExpired = (expires?: number) => {
   return expires <= Date.now();
 };
 
+const isLikelyExceptionIdentifier = (value: string) => {
+  const trimmed = value.trim();
+
+  if (!trimmed) {
+    return false;
+  }
+
+  if (!/exception$/i.test(trimmed)) {
+    return false;
+  }
+
+  return !/\s/.test(trimmed);
+};
+
 export function initializeHttpInterceptors() {
   if (interceptorsInitialized || !isBrowserEnvironment) {
     return;
@@ -159,12 +173,28 @@ export function initializeHttpInterceptors() {
         if (payload?.status === 422 && payload?.errorMessages && typeof payload.errorMessages === 'object') {
           const messages = Object.values(payload.errorMessages as Record<string, unknown>)
             .flatMap((value) => (Array.isArray(value) ? value : [value]))
-            .filter((value): value is string => typeof value === 'string' && value.trim().length > 0);
+            .filter(
+              (value): value is string =>
+                typeof value === 'string' &&
+                value.trim().length > 0 &&
+                !isLikelyExceptionIdentifier(value),
+            );
 
           messages.forEach((message) => {
             toast.error(message);
           });
         }
+      } catch (error) {
+        console.error('Failed to handle validation error response', error);
+      }
+    }
+
+    if (response.status !== 200 && response.status !== 201) {
+        try {
+        const clone = response.clone();
+        const payload = await clone.json();
+
+    
       } catch (error) {
         console.error('Failed to handle validation error response', error);
       }
