@@ -39,7 +39,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Pagination, PaginationContent, PaginationItem } from '@/components/ui/pagination';
 import { ProxyFormDialog } from './components/proxy-form-dialog';
-import { deleteProxy, getProxies, ProxyRecord } from './api';
+import { deleteProxy, getProxies, pingProxy, ProxyRecord } from './api';
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50];
 
@@ -77,6 +77,8 @@ export function NetworkProxiesContent() {
   const [formMode, setFormMode] = useState<'create' | 'edit'>('create');
   const [selectedProxyId, setSelectedProxyId] = useState<string | null>(null);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [pingingProxyId, setPingingProxyId] = useState<string | null>(null);
+  const [lastPingIps, setLastPingIps] = useState<Record<string, string>>({});
 
   const proxiesQuery = useQuery({
     queryKey: ['proxies', page, limit],
@@ -126,6 +128,58 @@ export function NetworkProxiesContent() {
           duration: 5000,
         },
       );
+    },
+  });
+
+  const pingMutation = useMutation({
+    mutationFn: (id: string) => pingProxy(id),
+    onSuccess: (result, proxyId) => {
+      const ip = result?.ip;
+
+      toast.custom(
+        (t) => (
+          <Alert variant="mono" icon="success" onClose={() => toast.dismiss(t)}>
+            <AlertIcon>
+              <RiCheckboxCircleFill />
+            </AlertIcon>
+            <AlertTitle>{`Proxy is alive.${ip ? ` IP: ${ip}` : ''}`}</AlertTitle>
+          </Alert>
+        ),
+        {
+          duration: 4000,
+        },
+      );
+
+      setLastPingIps((previous) => {
+        if (!ip) {
+          const rest = { ...previous };
+          delete rest[proxyId];
+          return rest;
+        }
+
+        return {
+          ...previous,
+          [proxyId]: ip,
+        };
+      });
+    },
+    onError: (mutationError: Error) => {
+      toast.custom(
+        (t) => (
+          <Alert variant="mono" icon="destructive" onClose={() => toast.dismiss(t)}>
+            <AlertIcon>
+              <AlertCircle className="size-5" />
+            </AlertIcon>
+            <AlertTitle>{`Proxy test failed: ${mutationError.message}`}</AlertTitle>
+          </Alert>
+        ),
+        {
+          duration: 5000,
+        },
+      );
+    },
+    onSettled: () => {
+      setPingingProxyId(null);
     },
   });
 
@@ -237,6 +291,7 @@ export function NetworkProxiesContent() {
                 <TableHead>Port</TableHead>
                 <TableHead>Username</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Detected IP</TableHead>
                 <TableHead>Created</TableHead>
                 <TableHead>Updated</TableHead>
                 <TableHead className="sticky right-0 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/75">Actions</TableHead>
@@ -245,7 +300,7 @@ export function NetworkProxiesContent() {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="py-12 text-center text-muted-foreground">
+                  <TableCell colSpan={9} className="py-12 text-center text-muted-foreground">
                     <div className="flex items-center justify-center gap-2 text-sm">
                       <LoaderCircle className="size-4 animate-spin" />
                       Loading proxies...
@@ -254,7 +309,7 @@ export function NetworkProxiesContent() {
                 </TableRow>
               ) : hasError ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="py-6">
+                  <TableCell colSpan={9} className="py-6">
                     <Alert variant="mono" icon="destructive">
                       <AlertIcon>
                         <Server className="size-5" />
@@ -265,7 +320,7 @@ export function NetworkProxiesContent() {
                 </TableRow>
               ) : records.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="py-12 text-center text-muted-foreground">
+                  <TableCell colSpan={9} className="py-12 text-center text-muted-foreground">
                     No proxies found.
                   </TableCell>
                 </TableRow>
@@ -277,6 +332,16 @@ export function NetworkProxiesContent() {
                     <TableCell>{proxy.port}</TableCell>
                     <TableCell>{proxy.username ?? '—'}</TableCell>
                     <TableCell>{getStatusBadge(proxy.isActive)}</TableCell>
+                    <TableCell>
+                      {pingingProxyId === proxy.id ? (
+                        <span className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <LoaderCircle className="size-4 animate-spin" />
+                          Testing...
+                        </span>
+                      ) : (
+                        lastPingIps[proxy.id] ?? '—'
+                      )}
+                    </TableCell>
                     <TableCell>{formatDate(proxy.createdAt)}</TableCell>
                     <TableCell>{formatDate(proxy.updatedAt)}</TableCell>
                     <TableCell className="sticky right-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/75">
@@ -287,6 +352,27 @@ export function NetworkProxiesContent() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            disabled={pingingProxyId === proxy.id || pingMutation.isPending}
+                            onSelect={() => {
+                              if (pingingProxyId === proxy.id || pingMutation.isPending) {
+                                return;
+                              }
+
+                              setPingingProxyId(proxy.id);
+                              pingMutation.mutate(proxy.id);
+                            }}
+                            className="flex items-center gap-2"
+                          >
+                            {pingingProxyId === proxy.id ? (
+                              <>
+                                <LoaderCircle className="size-4 animate-spin" />
+                                Pinging...
+                              </>
+                            ) : (
+                              'Ping'
+                            )}
+                          </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => openEditModal(proxy.id)}>
                             Update
                           </DropdownMenuItem>
