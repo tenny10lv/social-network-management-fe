@@ -37,6 +37,10 @@ export type ProxyRecord = {
   updatedAt?: string | null;
 };
 
+export type ProxyPingResult = {
+  ip?: string;
+};
+
 export type ProxyListResponse = {
   data: ProxyRecord[];
   meta?: {
@@ -210,4 +214,33 @@ export async function deleteProxy(id: string): Promise<void> {
   });
 
   await handleResponse(response);
+}
+
+const extractIpAddress = (payload: any): string | undefined => {
+  if (!payload || typeof payload !== 'object') {
+    return undefined;
+  }
+
+  const candidates = [
+    payload.ip,
+    payload.address,
+    payload.ipAddress,
+    payload.ip_address,
+    payload.publicIp,
+    payload.public_ip,
+  ];
+
+  const resolved = candidates.find((value) => typeof value === 'string' && value.trim().length > 0);
+
+  return typeof resolved === 'string' ? resolved : undefined;
+};
+
+export async function pingProxy(id: string): Promise<ProxyPingResult> {
+  const response = await fetch(buildApiUrl(`proxies/${id}/ping`));
+  const payload = await handleResponse(response);
+
+  const data = payload?.data ?? payload;
+  const ip = extractIpAddress(data) ?? extractIpAddress(payload);
+
+  return { ip };
 }
