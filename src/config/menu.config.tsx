@@ -148,6 +148,11 @@ export const MENU_SIDEBAR_COMPACT: MenuConfig = [
     path: '/',
   },
   {
+    title: 'Publishing',
+    icon: CalendarCheck,
+    path: '/publishing',
+  },
+  {
     title: 'Public Profile',
     icon: UserCircle,
     children: [
@@ -1411,6 +1416,12 @@ export const MENU_ROOT: MenuConfig = [
     icon: FileText,
     rootPath: '/contents/',
     path: 'contents',
+  },
+  {
+    title: 'Publishing',
+    icon: CalendarCheck,
+    rootPath: '/publishing/',
+    path: 'publishing',
   },
   {
     title: 'Store - Client',
