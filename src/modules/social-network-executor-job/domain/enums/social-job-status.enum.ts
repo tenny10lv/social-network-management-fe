@@ -1,0 +1,7 @@
+export enum SocialJobStatus {
+  PENDING = 'PENDING',
+  PROCESSING = 'PROCESSING',
+  SUCCESS = 'SUCCESS',
+  FAILED = 'FAILED',
+  TIMEOUT = 'TIMEOUT',
+}
