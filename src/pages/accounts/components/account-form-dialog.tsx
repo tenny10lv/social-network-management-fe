@@ -70,6 +70,39 @@ const DEFAULT_VALUES: AccountFormValues = {
   isActive: true,
 };
 
+const resolvePlatformValue = (value?: string | null) => {
+  if (!value) {
+    return '';
+  }
+
+  const trimmed = value.trim();
+
+  if (!trimmed) {
+    return '';
+  }
+
+  const directMatch = PLATFORM_OPTIONS.find((option) => option.value === trimmed);
+  if (directMatch) {
+    return directMatch.value;
+  }
+
+  const caseInsensitiveMatch = PLATFORM_OPTIONS.find(
+    (option) => option.value.toLowerCase() === trimmed.toLowerCase(),
+  );
+
+  return caseInsensitiveMatch?.value ?? trimmed;
+};
+
+const sanitizeProxyId = (value?: string | null) => {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  const trimmed = String(value).trim();
+
+  return trimmed === '' ? null : trimmed;
+};
+
 const NO_PROXY_OPTION_VALUE = '__no_proxy__';
 
 export function AccountFormDialog({
@@ -118,15 +151,37 @@ export function AccountFormDialog({
   useEffect(() => {
     if (account && mode === 'edit' && open) {
       reset({
-        platform: account.platform ?? '',
+        platform: resolvePlatformValue(account.platform),
         accountName: account.accountName ?? '',
         username: account.username ?? '',
         password: '',
-        proxyId: account.proxyId ?? null,
+        proxyId: sanitizeProxyId(account.proxyId),
         isActive: account.isActive,
       });
     }
   }, [account, mode, open, reset]);
+
+  const proxyOptions = useMemo(() => {
+    const options = proxiesQuery.data ?? [];
+
+    if (!account || !account.proxyId) {
+      return options;
+    }
+
+    const normalizedId = sanitizeProxyId(account.proxyId);
+
+    if (!normalizedId || options.some((option) => option.id === normalizedId)) {
+      return options;
+    }
+
+    return [
+      ...options,
+      {
+        id: normalizedId,
+        name: account.proxyName ?? 'Current proxy',
+      },
+    ];
+  }, [account, proxiesQuery.data]);
 
   const createMutation = useMutation({
     mutationFn: (values: AccountFormValues) => createAccount(values),
@@ -307,7 +362,7 @@ export function AccountFormDialog({
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value={NO_PROXY_OPTION_VALUE}>No proxy</SelectItem>
-                            {(proxiesQuery.data ?? []).map((proxy) => (
+                            {proxyOptions.map((proxy) => (
                               <SelectItem key={proxy.id} value={proxy.id}>
                                 {proxy.name}
                               </SelectItem>

@@ -291,7 +291,6 @@ export function NetworkProxiesContent() {
                 <TableHead>Port</TableHead>
                 <TableHead>Username</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Detected IP</TableHead>
                 <TableHead>Created</TableHead>
                 <TableHead>Updated</TableHead>
                 <TableHead className="sticky right-0 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/75">Actions</TableHead>
@@ -332,16 +331,6 @@ export function NetworkProxiesContent() {
                     <TableCell>{proxy.port}</TableCell>
                     <TableCell>{proxy.username ?? '—'}</TableCell>
                     <TableCell>{getStatusBadge(proxy.isActive)}</TableCell>
-                    <TableCell>
-                      {pingingProxyId === proxy.id ? (
-                        <span className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <LoaderCircle className="size-4 animate-spin" />
-                          Testing...
-                        </span>
-                      ) : (
-                        lastPingIps[proxy.id] ?? '—'
-                      )}
-                    </TableCell>
                     <TableCell>{formatDate(proxy.createdAt)}</TableCell>
                     <TableCell>{formatDate(proxy.updatedAt)}</TableCell>
                     <TableCell className="sticky right-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/75">
