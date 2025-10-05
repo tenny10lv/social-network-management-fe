@@ -258,7 +258,6 @@ export function AccountModuleContent() {
                 <TableHead>Username</TableHead>
                 <TableHead>Proxy</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Expiry</TableHead>
                 <TableHead>Created</TableHead>
                 <TableHead>Updated</TableHead>
                 <TableHead className="sticky right-0 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/75">
@@ -269,7 +268,7 @@ export function AccountModuleContent() {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="py-12 text-center text-muted-foreground">
+                  <TableCell colSpan={8} className="py-12 text-center text-muted-foreground">
                     <div className="flex items-center justify-center gap-2 text-sm">
                       <LoaderCircle className="size-4 animate-spin" />
                       Loading accounts...
@@ -278,7 +277,7 @@ export function AccountModuleContent() {
                 </TableRow>
               ) : hasError ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="py-6">
+                  <TableCell colSpan={8} className="py-6">
                     <Alert variant="mono" icon="destructive">
                       <AlertIcon>
                         <Server className="size-5" />
@@ -289,7 +288,7 @@ export function AccountModuleContent() {
                 </TableRow>
               ) : records.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="py-12 text-center text-muted-foreground">
+                  <TableCell colSpan={8} className="py-12 text-center text-muted-foreground">
                     No accounts found.
                   </TableCell>
                 </TableRow>
@@ -301,7 +300,6 @@ export function AccountModuleContent() {
                     <TableCell>{account.username || '—'}</TableCell>
                     <TableCell>{account.proxyName ?? account.proxyId ?? '—'}</TableCell>
                     <TableCell>{getStatusBadge(account)}</TableCell>
-                    <TableCell>{formatDate(account.expiryDate)}</TableCell>
                     <TableCell>{formatDate(account.createdAt)}</TableCell>
                     <TableCell>{formatDate(account.updatedAt)}</TableCell>
                     <TableCell className="sticky right-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/75">

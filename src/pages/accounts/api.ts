@@ -34,7 +34,6 @@ export type AccountRecord = {
   isActive: boolean;
   accessToken?: string | null;
   refreshToken?: string | null;
-  expiryDate?: string | null;
   createdAt?: string | null;
   updatedAt?: string | null;
 };
@@ -169,7 +168,6 @@ const normalizeAccountRecord = (record: any): AccountRecord => {
     isActive,
     accessToken: record?.accessToken ?? record?.access_token ?? null,
     refreshToken: record?.refreshToken ?? record?.refresh_token ?? null,
-    expiryDate: record?.expiryDate ?? record?.expiresAt ?? record?.expiry_date ?? record?.tokenExpiresAt ?? null,
     createdAt: record?.createdAt ?? record?.created_at ?? null,
     updatedAt: record?.updatedAt ?? record?.updated_at ?? null,
   };
