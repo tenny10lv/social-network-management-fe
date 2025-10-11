@@ -423,7 +423,7 @@ export function WatchlistModuleContent() {
           </TabsContent>
         </Tabs>
       </div>
-      <div className="xl:col-span-2 2xl:col-span-2 self-start xl:min-w-[260px]">
+      <div className="self-start xl:col-span-4 xl:col-start-1 xl:row-start-2 xl:min-w-[340px] 2xl:col-span-3 2xl:col-start-1 2xl:row-start-2">
         <MyThreadsAccountsTable
           accounts={myAccounts}
           onSetPrimary={handleSetPrimaryAccount}
