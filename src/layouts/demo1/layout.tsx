@@ -29,6 +29,7 @@ export function Demo1Layout() {
   useEffect(() => {
     // Set current layout
     setOption('layout', 'demo1');
+    setOption('container', 'fluid');
   }, [setOption]);
 
   useEffect(() => {
