@@ -371,8 +371,8 @@ export function WatchlistModuleContent() {
   );
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[minmax(0,420px)_1fr]">
-      <div className="space-y-6">
+    <div className="grid gap-6 md:gap-8 xl:grid-cols-12 2xl:gap-10">
+      <div className="xl:col-span-4 2xl:col-span-3 self-start">
         <WatchlistAccountsTable
           accounts={watchlistAccounts}
           selectedAccountId={selectedAccountId}
@@ -381,18 +381,19 @@ export function WatchlistModuleContent() {
           onRequestRemove={setAccountPendingRemoval}
           onTriggerCrawl={handleTriggerCrawl}
         />
-        <MyThreadsAccountsTable
-          accounts={myAccounts}
-          onSetPrimary={handleSetPrimaryAccount}
-          onToggleStatus={handleToggleMyAccountStatus}
-        />
       </div>
-      <div className="space-y-6">
+      <div className="xl:col-span-5 2xl:col-span-7 flex flex-col gap-6">
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as typeof activeTab)}>
-          <TabsList className="w-full justify-start overflow-x-auto">
-            <TabsTrigger value="crawled">Crawled Posts</TabsTrigger>
-            <TabsTrigger value="scheduled">Scheduled</TabsTrigger>
-            <TabsTrigger value="published">Published</TabsTrigger>
+          <TabsList className="w-full justify-between gap-2 overflow-x-auto rounded-lg border bg-muted/40 p-1">
+            <TabsTrigger value="crawled" className="flex-1 whitespace-nowrap">
+              Crawled Posts
+            </TabsTrigger>
+            <TabsTrigger value="scheduled" className="flex-1 whitespace-nowrap">
+              Scheduled
+            </TabsTrigger>
+            <TabsTrigger value="published" className="flex-1 whitespace-nowrap">
+              Published
+            </TabsTrigger>
           </TabsList>
           <TabsContent value="crawled" className="mt-6">
             <CrawledPostsPanel
@@ -421,6 +422,13 @@ export function WatchlistModuleContent() {
             />
           </TabsContent>
         </Tabs>
+      </div>
+      <div className="xl:col-span-3 2xl:col-span-2 self-start">
+        <MyThreadsAccountsTable
+          accounts={myAccounts}
+          onSetPrimary={handleSetPrimaryAccount}
+          onToggleStatus={handleToggleMyAccountStatus}
+        />
       </div>
 
       <WatchlistTagsDialog

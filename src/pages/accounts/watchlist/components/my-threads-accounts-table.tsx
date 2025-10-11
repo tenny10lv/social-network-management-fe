@@ -80,17 +80,17 @@ export function MyThreadsAccountsTable({ accounts, onSetPrimary, onToggleStatus 
             Configure which owned profiles receive repurposed content from the watchlist pipeline.
           </p>
         </CardHeading>
-        <CardToolbar className="flex-col gap-4 md:flex-row md:items-center md:justify-end">
+        <CardToolbar className="flex-col gap-4 xl:flex-row xl:items-center xl:justify-between xl:gap-6">
           <Input
             value={searchQuery}
             onChange={(event) => setSearchQuery(event.target.value)}
             placeholder="Search my accounts"
-            className="w-full md:w-60"
+            className="w-full xl:max-w-[220px]"
           />
-          <div className="flex w-full items-center gap-2 md:w-auto">
-            <Label className="hidden text-xs font-medium text-muted-foreground md:inline-flex">Status</Label>
+          <div className="flex w-full items-center gap-2 xl:w-auto">
+            <Label className="hidden text-xs font-medium text-muted-foreground xl:inline-flex">Status</Label>
             <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as typeof statusFilter)}>
-              <SelectTrigger className="w-full md:w-[140px]">
+              <SelectTrigger className="w-full xl:w-[160px]">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
@@ -109,7 +109,7 @@ export function MyThreadsAccountsTable({ accounts, onSetPrimary, onToggleStatus 
               <TableRow>
                 <TableHead>Account</TableHead>
                 <TableHead className="w-[140px]">Followers</TableHead>
-                <TableHead className="w-[160px]">Publishing Window</TableHead>
+                <TableHead className="w-[180px]">Publishing Window</TableHead>
                 <TableHead className="w-[180px]">Last Activity</TableHead>
                 <TableHead className="w-[60px] text-right">Actions</TableHead>
               </TableRow>
@@ -124,7 +124,7 @@ export function MyThreadsAccountsTable({ accounts, onSetPrimary, onToggleStatus 
               ) : (
                 currentRecords.map((account) => (
                   <TableRow key={account.id}>
-                    <TableCell>
+                    <TableCell className="align-top py-4">
                       <div className="flex flex-col gap-1">
                         <div className="flex items-center gap-2">
                           <span className="font-medium leading-tight">{account.displayName}</span>
@@ -137,19 +137,19 @@ export function MyThreadsAccountsTable({ accounts, onSetPrimary, onToggleStatus 
                         <span className="text-xs text-muted-foreground">{account.handle}</span>
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="align-top py-4">
                       <div className="flex flex-col gap-1">
                         <span className="font-semibold leading-tight">{account.followerCount.toLocaleString()}</span>
                         <span className="text-xs text-muted-foreground">{account.timezone.replace('_', ' ')}</span>
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="align-top py-4">
                       <div className="flex flex-col gap-1 text-xs text-muted-foreground">
                         <span className="text-sm font-medium text-foreground">Weekdays • 08:00 → 13:00</span>
                         <span>Auto-boost trending reposts</span>
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="align-top py-4">
                       <div className="flex flex-col gap-1">
                         <span className="text-sm font-medium leading-tight">{resolveLastPublished(account.lastPublishedAt)}</span>
                         <Badge variant={account.status === 'active' ? 'success' : 'secondary'} appearance="light" className="w-fit">
@@ -157,7 +157,7 @@ export function MyThreadsAccountsTable({ accounts, onSetPrimary, onToggleStatus 
                         </Badge>
                       </div>
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="align-top py-4 text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon" className="size-8">

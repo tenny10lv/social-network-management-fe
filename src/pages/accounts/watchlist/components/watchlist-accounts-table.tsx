@@ -85,8 +85,8 @@ export function WatchlistAccountsTable({
             Monitor competitor activity and trigger new crawls when major updates drop.
           </p>
         </CardHeading>
-        <CardToolbar className="flex-col gap-4 lg:flex-row lg:items-center lg:justify-end">
-          <div className="relative w-full lg:w-64">
+        <CardToolbar className="flex-col gap-4 xl:flex-row xl:items-center xl:justify-between xl:gap-6">
+          <div className="relative w-full xl:max-w-[280px]">
             <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={searchQuery}
@@ -145,7 +145,7 @@ export function WatchlistAccountsTable({
               <TableRow>
                 <TableHead className="w-[220px]">Account</TableHead>
                 <TableHead>Category</TableHead>
-                <TableHead className="w-[160px]">Last Crawled</TableHead>
+                <TableHead className="w-[180px]">Last Crawled</TableHead>
                 <TableHead>Tags</TableHead>
                 <TableHead className="w-[120px]">Status</TableHead>
                 <TableHead className="w-[60px] text-right">Actions</TableHead>
@@ -169,7 +169,7 @@ export function WatchlistAccountsTable({
                     )}
                     onClick={() => onSelectAccount(account.id)}
                   >
-                    <TableCell>
+                    <TableCell className="align-top py-4">
                       <div className="flex items-center gap-3">
                         <Avatar className="size-11">
                           <AvatarImage src={account.avatarUrl} alt={account.displayName} />
@@ -186,7 +186,7 @@ export function WatchlistAccountsTable({
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="align-top py-4">
                       <div className="flex flex-col gap-1">
                         <span className="text-sm font-medium leading-tight">{account.category}</span>
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -195,13 +195,13 @@ export function WatchlistAccountsTable({
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="align-top py-4">
                       <div className="flex flex-col gap-1">
                         <span className="text-sm font-medium leading-tight">{formatDateTime(account.lastCrawledAt)}</span>
                         <span className="text-xs text-muted-foreground">{account.crawlFrequency} crawl</span>
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="align-top py-4">
                       <div className="flex flex-wrap gap-1.5">
                         {account.tags.map((tag) => (
                           <Badge key={tag} variant="outline" className="text-xs font-medium">
@@ -210,7 +210,7 @@ export function WatchlistAccountsTable({
                         ))}
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="align-top py-4">
                       <div className="flex flex-col gap-1">
                         <Badge
                           variant={account.status === 'monitoring' ? 'success' : 'secondary'}
@@ -225,7 +225,7 @@ export function WatchlistAccountsTable({
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="align-top py-4 text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon" className="size-8">
