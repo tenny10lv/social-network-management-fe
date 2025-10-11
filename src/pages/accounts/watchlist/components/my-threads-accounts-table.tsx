@@ -73,7 +73,7 @@ export function MyThreadsAccountsTable({ accounts, onSetPrimary, onToggleStatus 
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="py-5">
         <CardHeading>
           <CardTitle>My Threads Accounts</CardTitle>
           <p className="text-sm text-muted-foreground">

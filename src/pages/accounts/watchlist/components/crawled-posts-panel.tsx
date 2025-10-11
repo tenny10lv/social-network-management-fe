@@ -86,7 +86,7 @@ export function CrawledPostsPanel({ account, posts, onOpenEditor, onOpenSchedule
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="py-5">
         <CardHeading>
           <div className="flex flex-col gap-1">
             <CardTitle>Crawled Posts</CardTitle>

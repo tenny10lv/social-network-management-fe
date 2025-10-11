@@ -78,7 +78,7 @@ export function WatchlistAccountsTable({
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="py-5">
         <CardHeading>
           <CardTitle>Watchlist Accounts</CardTitle>
           <p className="text-sm text-muted-foreground">
