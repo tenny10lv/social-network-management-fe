@@ -371,8 +371,8 @@ export function WatchlistModuleContent() {
   );
 
   return (
-    <div className="grid w-full gap-6 md:gap-8 xl:grid-cols-12 2xl:gap-12">
-      <div className="xl:col-span-5 2xl:col-span-5 self-start xl:min-w-[340px]">
+    <div className="grid w-full gap-6 md:gap-8 xl:grid-cols-[0.4fr_0.6fr] xl:gap-6 xl:items-start 2xl:gap-8">
+      <div className="self-start xl:col-span-1 xl:min-w-[340px]">
         <WatchlistAccountsTable
           accounts={watchlistAccounts}
           selectedAccountId={selectedAccountId}
@@ -382,7 +382,7 @@ export function WatchlistModuleContent() {
           onTriggerCrawl={handleTriggerCrawl}
         />
       </div>
-      <div className="xl:col-span-6 2xl:col-span-7 flex flex-col gap-6">
+      <div className="flex flex-col gap-6 xl:col-span-1">
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as typeof activeTab)}>
           <TabsList className="w-full justify-between gap-2 overflow-x-auto rounded-lg border bg-muted/40 p-1">
             <TabsTrigger value="crawled" className="flex-1 whitespace-nowrap">
@@ -423,7 +423,7 @@ export function WatchlistModuleContent() {
           </TabsContent>
         </Tabs>
       </div>
-      <div className="self-start xl:col-span-4 xl:col-start-1 xl:row-start-2 xl:min-w-[340px] 2xl:col-span-3 2xl:col-start-1 2xl:row-start-2">
+      <div className="self-start xl:col-span-full xl:min-w-[340px]">
         <MyThreadsAccountsTable
           accounts={myAccounts}
           onSetPrimary={handleSetPrimaryAccount}
