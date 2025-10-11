@@ -106,7 +106,7 @@ export function ScheduledPostsPanel({
             Review queued repurposed posts, adjust launch windows, or publish early when momentum builds.
           </p>
         </CardHeading>
-        <CardToolbar className="flex-col gap-4 xl:flex-row xl:items-center xl:justify-end">
+        <CardToolbar className="flex-col gap-4 xl:flex-row xl:items-center xl:justify-between xl:gap-6">
           <Input
             value={searchQuery}
             onChange={(event) => {
@@ -119,7 +119,7 @@ export function ScheduledPostsPanel({
           <div className="flex w-full items-center gap-2 xl:w-auto">
             <Label className="hidden text-xs font-medium text-muted-foreground xl:inline-flex">Publishing to</Label>
             <Select value={accountFilter} onValueChange={(value) => setAccountFilter(value)}>
-              <SelectTrigger className="w-full xl:w-[220px]">
+              <SelectTrigger className="w-full xl:w-[240px]">
                 <SelectValue placeholder="Target account" />
               </SelectTrigger>
               <SelectContent>
@@ -140,15 +140,15 @@ export function ScheduledPostsPanel({
             <TableHeader>
               <TableRow>
                 <TableHead>Post</TableHead>
-                <TableHead className="w-[180px]">Target Account</TableHead>
-                <TableHead className="w-[160px]">Scheduled For</TableHead>
+                <TableHead className="w-[200px]">Target Account</TableHead>
+                <TableHead className="w-[180px]">Scheduled For</TableHead>
                 <TableHead className="w-[60px] text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {currentRecords.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="py-8 text-center text-sm text-muted-foreground">
+                  <TableCell colSpan={4} className="py-10 text-center text-sm text-muted-foreground">
                     {tasks.length === 0
                       ? 'No scheduled posts yet. Schedule from the crawled posts tab.'
                       : 'No scheduled posts match your filters.'}
@@ -161,7 +161,7 @@ export function ScheduledPostsPanel({
 
                   return (
                     <TableRow key={task.id}>
-                      <TableCell>
+                      <TableCell className="align-top py-4">
                         <div className="flex flex-col gap-2">
                           <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
                             {post?.topics.map((topic) => (
@@ -173,7 +173,7 @@ export function ScheduledPostsPanel({
                           <p className="text-sm leading-relaxed text-foreground">{post?.content}</p>
                         </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="align-top py-4">
                         {targetAccount ? (
                           <div className="flex flex-col gap-1">
                             <span className="text-sm font-medium leading-tight">{targetAccount.displayName}</span>
@@ -183,13 +183,13 @@ export function ScheduledPostsPanel({
                           <span className="text-xs text-muted-foreground">Unknown account</span>
                         )}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="align-top py-4">
                         <div className="flex flex-col gap-1">
                           <span className="text-sm font-medium leading-tight">{formatTimestamp(task.scheduledFor)}</span>
                           <span className="text-xs text-muted-foreground">Local timezone adapts automatically.</span>
                         </div>
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="align-top py-4 text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon" className="size-8">

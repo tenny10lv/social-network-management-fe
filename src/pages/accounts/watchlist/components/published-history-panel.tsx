@@ -97,7 +97,7 @@ export function PublishedHistoryPanel({ tasks, posts, myAccounts, onOpenEditor }
             Audit every republished story with destination metadata and publishing notes.
           </p>
         </CardHeading>
-        <CardToolbar className="flex-col gap-4 xl:flex-row xl:items-center xl:justify-end">
+        <CardToolbar className="flex-col gap-4 xl:flex-row xl:items-center xl:justify-between xl:gap-6">
           <Input
             value={searchQuery}
             onChange={(event) => {
@@ -110,7 +110,7 @@ export function PublishedHistoryPanel({ tasks, posts, myAccounts, onOpenEditor }
           <div className="flex w-full items-center gap-2 xl:w-auto">
             <Label className="hidden text-xs font-medium text-muted-foreground xl:inline-flex">Published to</Label>
             <Select value={accountFilter} onValueChange={(value) => setAccountFilter(value)}>
-              <SelectTrigger className="w-full xl:w-[220px]">
+              <SelectTrigger className="w-full xl:w-[240px]">
                 <SelectValue placeholder="Target account" />
               </SelectTrigger>
               <SelectContent>
@@ -131,15 +131,15 @@ export function PublishedHistoryPanel({ tasks, posts, myAccounts, onOpenEditor }
             <TableHeader>
               <TableRow>
                 <TableHead>Post</TableHead>
-                <TableHead className="w-[200px]">Published To</TableHead>
-                <TableHead className="w-[160px]">Published At</TableHead>
+                <TableHead className="w-[220px]">Published To</TableHead>
+                <TableHead className="w-[180px]">Published At</TableHead>
                 <TableHead className="w-[60px] text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {currentRecords.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="py-8 text-center text-sm text-muted-foreground">
+                  <TableCell colSpan={4} className="py-10 text-center text-sm text-muted-foreground">
                     {tasks.length === 0
                       ? 'No published history yet. Publish or schedule posts to build history.'
                       : 'No published posts match your filters.'}
@@ -152,7 +152,7 @@ export function PublishedHistoryPanel({ tasks, posts, myAccounts, onOpenEditor }
 
                   return (
                     <TableRow key={task.id}>
-                      <TableCell>
+                      <TableCell className="align-top py-4">
                         <div className="flex flex-col gap-2">
                           <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
                             {post?.topics.map((topic) => (
@@ -167,7 +167,7 @@ export function PublishedHistoryPanel({ tasks, posts, myAccounts, onOpenEditor }
                           )}
                         </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="align-top py-4">
                         {targetAccount ? (
                           <div className="flex flex-col gap-1">
                             <span className="text-sm font-medium leading-tight">{targetAccount.displayName}</span>
@@ -177,13 +177,13 @@ export function PublishedHistoryPanel({ tasks, posts, myAccounts, onOpenEditor }
                           <span className="text-xs text-muted-foreground">Unknown account</span>
                         )}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="align-top py-4">
                         <div className="flex flex-col gap-1">
                           <span className="text-sm font-medium leading-tight">{formatTimestamp(task.executedAt)}</span>
                           <span className="text-xs text-muted-foreground">Action type: {task.action}</span>
                         </div>
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="align-top py-4 text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon" className="size-8">

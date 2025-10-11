@@ -88,7 +88,7 @@ export function CrawledPostsPanel({ account, posts, onOpenEditor, onOpenSchedule
     <Card>
       <CardHeader>
         <CardHeading>
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-1.5">
             <CardTitle>Crawled Posts</CardTitle>
             {account ? (
               <p className="text-sm text-muted-foreground">
@@ -100,7 +100,7 @@ export function CrawledPostsPanel({ account, posts, onOpenEditor, onOpenSchedule
             )}
           </div>
         </CardHeading>
-        <CardToolbar className="flex-col gap-4 xl:flex-row xl:items-center xl:justify-end">
+        <CardToolbar className="flex-col gap-4 xl:flex-row xl:items-center xl:justify-between xl:gap-6">
           <Input
             value={searchQuery}
             onChange={(event) => {
@@ -113,7 +113,7 @@ export function CrawledPostsPanel({ account, posts, onOpenEditor, onOpenSchedule
           <div className="flex w-full items-center gap-2 xl:w-auto">
             <Label className="hidden text-xs font-medium text-muted-foreground xl:inline-flex">Status</Label>
             <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as typeof statusFilter)}>
-              <SelectTrigger className="w-full xl:w-[200px]">
+              <SelectTrigger className="w-full xl:w-[220px]">
                 <SelectValue placeholder="Filter status" />
               </SelectTrigger>
               <SelectContent>
@@ -132,16 +132,16 @@ export function CrawledPostsPanel({ account, posts, onOpenEditor, onOpenSchedule
             <TableHeader>
               <TableRow>
                 <TableHead>Post</TableHead>
-                <TableHead className="w-[160px]">Captured</TableHead>
-                <TableHead className="w-[160px]">Status</TableHead>
-                <TableHead className="w-[180px]">Engagement</TableHead>
+                <TableHead className="w-[180px]">Captured</TableHead>
+                <TableHead className="w-[180px]">Status</TableHead>
+                <TableHead className="w-[200px]">Engagement</TableHead>
                 <TableHead className="w-[60px] text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {currentRecords.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="py-8 text-center text-sm text-muted-foreground">
+                  <TableCell colSpan={5} className="py-10 text-center text-sm text-muted-foreground">
                     {posts.length === 0
                       ? 'No crawled posts yet for this account.'
                       : 'No posts match your filters.'}
@@ -150,7 +150,7 @@ export function CrawledPostsPanel({ account, posts, onOpenEditor, onOpenSchedule
               ) : (
                 currentRecords.map((post) => (
                   <TableRow key={post.id}>
-                    <TableCell>
+                    <TableCell className="align-top py-4">
                       <div className="flex flex-col gap-2">
                         <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
                           {post.topics.map((topic) => (
@@ -162,13 +162,13 @@ export function CrawledPostsPanel({ account, posts, onOpenEditor, onOpenSchedule
                         <p className="text-sm leading-relaxed text-foreground">{post.content}</p>
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="align-top py-4">
                       <div className="flex flex-col gap-1">
                         <span className="text-sm font-medium leading-tight">{formatTimestamp(post.capturedAt)}</span>
                         <span className="text-xs text-muted-foreground capitalize">{post.mediaType}</span>
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="align-top py-4">
                       <div className="flex flex-col gap-1">
                         <Badge
                           variant={post.status === 'ready' ? 'primary' : post.status === 'draft' ? 'secondary' : 'success'}
@@ -192,7 +192,7 @@ export function CrawledPostsPanel({ account, posts, onOpenEditor, onOpenSchedule
                         )}
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="align-top py-4">
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <div className="flex items-center gap-1">
                           <TrendingUp className="size-3.5 text-foreground" />
@@ -209,7 +209,7 @@ export function CrawledPostsPanel({ account, posts, onOpenEditor, onOpenSchedule
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="align-top py-4 text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon" className="size-8">
