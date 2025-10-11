@@ -52,39 +52,99 @@ import {
 import { type MenuConfig } from './types';
 
 export const MENU_SIDEBAR: MenuConfig = [
+  { heading: 'Overview' },
   {
-    title: 'Dashboards',
+    title: 'Dashboard',
     icon: LayoutGrid,
     path: '/',
+  },
+  { heading: 'Operations' },
+  {
+    title: 'Network Operations',
+    icon: Network,
     children: [
-      { title: 'Light Sidebar', path: '/' },
-      { title: 'Dark Sidebar', path: '/dark-sidebar' },
+      { title: 'Proxies', path: '/network/proxies' },
+      { title: 'Browser Contexts', path: '/browser-contexts' },
+      { title: 'Proxy Health', disabled: true },
     ],
   },
   {
-    title: 'Proxies',
-    icon: Plug,
-    path: '/network/proxies',
-  },
-  {
-    title: 'Browser Contexts',
-    icon: Monitor,
-    path: '/browser-contexts',
-  },
-  {
-    title: 'Accounts',
-    icon: UserCheck,
-    path: '/accounts',
-  },
-  {
-    title: 'Contents',
+    title: 'Content Pipeline',
     icon: FileText,
-    path: '/contents',
+    children: [
+      { title: 'Content Library', path: '/contents' },
+      { title: 'Publishing Planner', path: '/publishing' },
+      { title: 'Drafts', disabled: true },
+      { title: 'Publishing History', disabled: true },
+    ],
+  },
+  { heading: 'Audience' },
+  {
+    title: 'Account Management',
+    icon: Users,
+    children: [
+      { title: 'Threads Accounts', path: '/accounts' },
+      { title: 'Watchlist', path: '/accounts/watchlist' },
+      { title: 'Team Members', path: '/account/members/team-members' },
+      { title: 'Roles & Permissions', path: '/account/members/roles' },
+      { title: 'Invite Members', path: '/account/members/import-members' },
+      { title: 'TikTok Accounts', disabled: true },
+      { title: 'Instagram Accounts', disabled: true },
+    ],
   },
   {
-    title: 'Publishing',
-    icon: CalendarCheck,
-    path: '/publishing',
+    title: 'Campaigns & Outreach',
+    icon: Share2,
+    children: [
+      { title: 'Campaign Planner', disabled: true },
+      { title: 'Creator CRM', disabled: true },
+      { title: 'Inbox', disabled: true },
+    ],
+  },
+  { heading: 'Insights' },
+  {
+    title: 'Analytics & Automation',
+    icon: TrendingUp,
+    children: [
+      { title: 'Performance Analytics', disabled: true },
+      { title: 'Engagement Reports', disabled: true },
+      { title: 'Automation Workflows', disabled: true },
+    ],
+  },
+  { heading: 'Administration' },
+  {
+    title: 'Workspace Settings',
+    icon: Settings,
+    children: [
+      {
+        title: 'Organization',
+        children: [
+          { title: 'Company Profile', path: '/account/home/company-profile' },
+          { title: 'Brand & Appearance', path: '/account/appearance' },
+          { title: 'Notifications', path: '/account/notifications' },
+        ],
+      },
+      {
+        title: 'Access & Security',
+        children: [
+          { title: 'Security Overview', path: '/account/security/overview' },
+          { title: 'Privacy Controls', path: '/account/security/privacy-settings' },
+          { title: 'Allowed IPs', path: '/account/security/allowed-ip-addresses' },
+          { title: 'Login Sessions', path: '/account/security/current-sessions' },
+          { title: 'Security Log', path: '/account/security/security-log' },
+        ],
+      },
+      {
+        title: 'Developers',
+        children: [
+          { title: 'API Keys', path: '/account/api-keys' },
+          { title: 'Integrations', path: '/account/integrations' },
+        ],
+      },
+      { title: 'Audit Log', path: '/account/activity' },
+      { title: 'Billing & Plans', path: '/account/billing/plans' },
+      { title: 'System Status', disabled: true },
+    ],
   },
 ];
 
