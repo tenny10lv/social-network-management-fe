@@ -15,7 +15,7 @@ export function WatchlistModulePage() {
   return (
     <Fragment>
       {settings?.layout === 'demo1' && (
-        <Container>
+        <Container width="fluid">
           <Toolbar>
             <ToolbarHeading>
               <ToolbarPageTitle text="Watchlist Intelligence" />
@@ -29,7 +29,7 @@ export function WatchlistModulePage() {
           </Toolbar>
         </Container>
       )}
-      <Container>
+      <Container width="fluid">
         <WatchlistModuleContent />
       </Container>
     </Fragment>
