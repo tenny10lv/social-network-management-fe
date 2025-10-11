@@ -10,6 +10,7 @@ export const MY_THREADS_ACCOUNTS: MyThreadsAccount[] = [
     status: 'active',
     isPrimary: true,
     lastPublishedAt: '2025-01-05T14:30:00Z',
+    avatarUrl: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=96&q=80',
   },
   {
     id: 'my-2',
@@ -19,6 +20,7 @@ export const MY_THREADS_ACCOUNTS: MyThreadsAccount[] = [
     timezone: 'Europe/London',
     status: 'active',
     lastPublishedAt: '2025-01-04T19:10:00Z',
+    avatarUrl: 'https://images.unsplash.com/photo-1529665253569-6d01c0eaf7b6?auto=format&fit=crop&w=96&q=80',
   },
   {
     id: 'my-3',
@@ -28,6 +30,7 @@ export const MY_THREADS_ACCOUNTS: MyThreadsAccount[] = [
     timezone: 'America/Los_Angeles',
     status: 'paused',
     lastPublishedAt: null,
+    avatarUrl: 'https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&w=96&q=80',
   },
 ];
 
@@ -119,6 +122,23 @@ export const CRAWLED_POSTS: CrawledPost[] = [
     language: 'en',
     topics: ['product-launch', 'streetwear'],
     mediaType: 'image',
+    images: [
+      {
+        src: 'https://images.unsplash.com/photo-1525171254930-643fc658b64e?auto=format&fit=crop&w=240&q=60',
+        full: 'https://images.unsplash.com/photo-1525171254930-643fc658b64e?auto=format&fit=crop&w=1200&q=90',
+        alt: 'Streetwear jacket flatlay',
+      },
+      {
+        src: 'https://images.unsplash.com/photo-1529336953121-497f6c1ed5f0?auto=format&fit=crop&w=240&q=60',
+        full: 'https://images.unsplash.com/photo-1529336953121-497f6c1ed5f0?auto=format&fit=crop&w=1200&q=90',
+        alt: 'Minimal sneakers',
+      },
+      {
+        src: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=240&q=60',
+        full: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1200&q=90',
+        alt: 'Close up of fabric texture',
+      },
+    ],
     status: 'ready',
     sentiment: 'positive',
     likes: 1850,
@@ -149,6 +169,18 @@ export const CRAWLED_POSTS: CrawledPost[] = [
     language: 'en',
     topics: ['ai', 'media-trends'],
     mediaType: 'video',
+    videos: [
+      {
+        src: 'https://storage.googleapis.com/coverr-main/mp4/Mt_Baker.mp4',
+        thumbnail: 'https://images.unsplash.com/photo-1525182008055-f88b95ff7980?auto=format&fit=crop&w=320&q=60',
+        title: 'AI deep dive teaser',
+      },
+      {
+        src: 'https://storage.googleapis.com/coverr-main/mp4/Footboys.mp4',
+        thumbnail: 'https://images.unsplash.com/photo-1523475472560-d2df97ec485c?auto=format&fit=crop&w=320&q=60',
+        title: 'Publisher interview snippet',
+      },
+    ],
     status: 'ready',
     sentiment: 'positive',
     likes: 980,
@@ -164,6 +196,18 @@ export const CRAWLED_POSTS: CrawledPost[] = [
     language: 'en',
     topics: ['campaign', 'client-work'],
     mediaType: 'video',
+    videos: [
+      {
+        src: 'https://storage.googleapis.com/coverr-main/mp4/Footboys.mp4',
+        thumbnail: 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=320&q=60',
+        title: 'Campaign teaser',
+      },
+      {
+        src: 'https://storage.googleapis.com/coverr-main/mp4/Nature.mp4',
+        thumbnail: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=320&q=60',
+        title: 'Behind the scenes',
+      },
+    ],
     status: 'ready',
     sentiment: 'positive',
     likes: 1630,
@@ -179,6 +223,13 @@ export const CRAWLED_POSTS: CrawledPost[] = [
     language: 'en',
     topics: ['community', 'events'],
     mediaType: 'text',
+    images: [
+      {
+        src: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=240&q=60',
+        full: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=90',
+        alt: 'Community meetup',
+      },
+    ],
     status: 'scheduled',
     scheduledFor: '2025-01-07T15:00:00Z',
     targetAccountId: 'my-2',
@@ -196,6 +247,18 @@ export const CRAWLED_POSTS: CrawledPost[] = [
     language: 'en',
     topics: ['interviews', 'community'],
     mediaType: 'text',
+    images: [
+      {
+        src: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=240&q=60',
+        full: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=1200&q=90',
+        alt: 'Interview microphone',
+      },
+      {
+        src: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=240&q=60',
+        full: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1200&q=90',
+        alt: 'Podcast studio',
+      },
+    ],
     status: 'published',
     publishedAt: '2025-01-04T20:30:00Z',
     targetAccountId: 'my-1',

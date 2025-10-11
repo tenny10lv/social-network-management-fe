@@ -23,6 +23,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { MyThreadsAccount } from '../types';
 import { EllipsisVertical, Power, ShieldCheck, Sparkles } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const PAGE_SIZE_OPTIONS = [3, 5, 10];
 
@@ -104,9 +105,10 @@ export function MyThreadsAccountsTable({ accounts, onSetPrimary, onToggleStatus 
       </CardHeader>
       <CardTable>
         <ScrollArea>
-          <Table>
+          <Table className="min-w-full">
             <TableHeader>
               <TableRow>
+                <TableHead className="w-[72px]">Avatar</TableHead>
                 <TableHead>Account</TableHead>
                 <TableHead className="w-[140px]">Followers</TableHead>
                 <TableHead className="w-[180px]">Publishing Window</TableHead>
@@ -117,13 +119,19 @@ export function MyThreadsAccountsTable({ accounts, onSetPrimary, onToggleStatus 
             <TableBody>
               {currentRecords.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="py-8 text-center text-sm text-muted-foreground">
+                  <TableCell colSpan={6} className="py-8 text-center text-sm text-muted-foreground">
                     No accounts available.
                   </TableCell>
                 </TableRow>
               ) : (
                 currentRecords.map((account) => (
                   <TableRow key={account.id}>
+                    <TableCell className="align-top py-4">
+                      <Avatar className="size-11">
+                        <AvatarImage src={account.avatarUrl} alt={account.displayName} />
+                        <AvatarFallback>{account.displayName.slice(0, 2).toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                    </TableCell>
                     <TableCell className="align-top py-4">
                       <div className="flex flex-col gap-1">
                         <div className="flex items-center gap-2">

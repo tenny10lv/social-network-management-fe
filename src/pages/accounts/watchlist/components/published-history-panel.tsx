@@ -23,6 +23,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ArrowUpRight, EllipsisVertical, FilePenLine } from 'lucide-react';
 import { CrawledPost, MyThreadsAccount, PublishingTask } from '../types';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { PostMediaThumbnails } from './post-media-thumbnails';
+import { MediaViewerDialog } from './media-viewer-dialog';
 
 const PAGE_SIZE_OPTIONS = [5, 10, 20];
 
@@ -38,6 +41,7 @@ export function PublishedHistoryPanel({ tasks, posts, myAccounts, onOpenEditor }
   const [accountFilter, setAccountFilter] = useState<'all' | string>('all');
   const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0]);
   const [page, setPage] = useState(1);
+  const [mediaViewer, setMediaViewer] = useState<{ postId: string; type: 'images' | 'videos' } | null>(null);
 
   const postsMap = useMemo(() => {
     return posts.reduce<Record<string, CrawledPost>>((map, post) => {
@@ -45,6 +49,8 @@ export function PublishedHistoryPanel({ tasks, posts, myAccounts, onOpenEditor }
       return map;
     }, {});
   }, [posts]);
+
+  const activeMediaPost = mediaViewer ? postsMap[mediaViewer.postId] : undefined;
 
   const filteredTasks = useMemo(() => {
     return tasks.filter((task) => {
@@ -126,20 +132,24 @@ export function PublishedHistoryPanel({ tasks, posts, myAccounts, onOpenEditor }
         </CardToolbar>
       </CardHeader>
       <CardTable>
-        <ScrollArea>
+        <ScrollArea className="max-h-[420px]" viewportClassName="max-h-[420px] pr-2">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Post</TableHead>
-                <TableHead className="w-[220px]">Published To</TableHead>
-                <TableHead className="w-[180px]">Published At</TableHead>
-                <TableHead className="w-[60px] text-right">Actions</TableHead>
+              <TableRow className="[&>th]:sticky [&>th]:top-0 [&>th]:z-10 [&>th]:bg-background">
+                <TableHead className="min-w-[320px]">Post</TableHead>
+                <TableHead className="min-w-[200px]">Images</TableHead>
+                <TableHead className="min-w-[200px]">Videos</TableHead>
+                <TableHead className="min-w-[220px]">Published To</TableHead>
+                <TableHead className="w-[200px]">Published At</TableHead>
+                <TableHead className="sticky right-0 z-20 w-[96px] bg-background text-right shadow-[inset_1px_0_0_theme(colors.border)]">
+                  Actions
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {currentRecords.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="py-10 text-center text-sm text-muted-foreground">
+                  <TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">
                     {tasks.length === 0
                       ? 'No published history yet. Publish or schedule posts to build history.'
                       : 'No published posts match your filters.'}
@@ -152,7 +162,7 @@ export function PublishedHistoryPanel({ tasks, posts, myAccounts, onOpenEditor }
 
                   return (
                     <TableRow key={task.id}>
-                      <TableCell className="align-top py-4">
+                      <TableCell className="min-w-[320px] align-top py-4">
                         <div className="flex flex-col gap-2">
                           <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
                             {post?.topics.map((topic) => (
@@ -161,11 +171,34 @@ export function PublishedHistoryPanel({ tasks, posts, myAccounts, onOpenEditor }
                               </Badge>
                             ))}
                           </div>
-                          <p className="text-sm leading-relaxed text-foreground">{post?.content}</p>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <p className="max-w-[520px] cursor-default text-sm leading-relaxed text-foreground line-clamp-3">
+                                {post?.content ?? 'Content unavailable'}
+                              </p>
+                            </TooltipTrigger>
+                            <TooltipContent align="start" className="max-w-sm text-sm leading-relaxed">
+                              {post?.content ?? 'Content unavailable'}
+                            </TooltipContent>
+                          </Tooltip>
                           {task.notes && (
                             <span className="text-xs text-muted-foreground">Notes: {task.notes}</span>
                           )}
                         </div>
+                      </TableCell>
+                      <TableCell className="align-top py-4">
+                        <PostMediaThumbnails
+                          type="images"
+                          images={post?.images}
+                          onClick={() => post && setMediaViewer({ postId: post.id, type: 'images' })}
+                        />
+                      </TableCell>
+                      <TableCell className="align-top py-4">
+                        <PostMediaThumbnails
+                          type="videos"
+                          videos={post?.videos}
+                          onClick={() => post && setMediaViewer({ postId: post.id, type: 'videos' })}
+                        />
                       </TableCell>
                       <TableCell className="align-top py-4">
                         {targetAccount ? (
@@ -183,7 +216,7 @@ export function PublishedHistoryPanel({ tasks, posts, myAccounts, onOpenEditor }
                           <span className="text-xs text-muted-foreground">Action type: {task.action}</span>
                         </div>
                       </TableCell>
-                      <TableCell className="align-top py-4 text-right">
+                      <TableCell className="sticky right-0 z-10 align-top bg-background py-4 text-right shadow-[inset_1px_0_0_theme(colors.border)]">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon" className="size-8">
@@ -265,6 +298,24 @@ export function PublishedHistoryPanel({ tasks, posts, myAccounts, onOpenEditor }
           {currentRecords.length} published post{currentRecords.length === 1 ? '' : 's'} on this page.
         </span>
       </CardFooter>
+      <MediaViewerDialog
+        open={Boolean(mediaViewer)}
+        type={mediaViewer?.type ?? 'images'}
+        title={
+          mediaViewer
+            ? `${mediaViewer.type === 'images' ? 'Images' : 'Videos'} • ${
+                activeMediaPost?.topics.join(', ') ?? 'Published media'
+              }`
+            : ''
+        }
+        images={mediaViewer?.type === 'images' ? activeMediaPost?.images : undefined}
+        videos={mediaViewer?.type === 'videos' ? activeMediaPost?.videos : undefined}
+        onOpenChange={(openState) => {
+          if (!openState) {
+            setMediaViewer(null);
+          }
+        }}
+      />
     </Card>
   );
 }
