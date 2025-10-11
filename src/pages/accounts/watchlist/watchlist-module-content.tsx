@@ -372,7 +372,7 @@ export function WatchlistModuleContent() {
 
   return (
     <div className="grid w-full gap-6 md:gap-8 xl:grid-cols-12 2xl:gap-12">
-      <div className="xl:col-span-4 2xl:col-span-3 self-start xl:min-w-[340px]">
+      <div className="xl:col-span-4 2xl:col-span-5 self-start xl:min-w-[340px]">
         <WatchlistAccountsTable
           accounts={watchlistAccounts}
           selectedAccountId={selectedAccountId}
