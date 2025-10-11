@@ -23,6 +23,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { WatchlistAccount } from '../types';
 
@@ -142,13 +143,15 @@ export function WatchlistAccountsTable({
         <ScrollArea>
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead className="min-w-[260px]">Account</TableHead>
+              <TableRow className="[&>th]:sticky [&>th]:top-0 [&>th]:z-10 [&>th]:bg-background">
+                <TableHead className="min-w-[320px]">Account</TableHead>
                 <TableHead className="min-w-[200px]">Category</TableHead>
                 <TableHead className="min-w-[220px]">Last Crawled</TableHead>
                 <TableHead className="min-w-[200px]">Tags</TableHead>
                 <TableHead className="w-[140px]">Status</TableHead>
-                <TableHead className="w-[80px] text-right">Actions</TableHead>
+                <TableHead className="sticky right-0 z-20 w-[96px] bg-background text-right shadow-[inset_1px_0_0_theme(colors.border)]">
+                  Actions
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -175,9 +178,18 @@ export function WatchlistAccountsTable({
                           <AvatarImage src={account.avatarUrl} alt={account.displayName} />
                           <AvatarFallback>{account.displayName.slice(0, 2).toUpperCase()}</AvatarFallback>
                         </Avatar>
-                        <div>
+                        <div className="min-w-0">
                           <div className="flex items-center gap-2">
-                            <span className="font-medium leading-tight">{account.displayName}</span>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="max-w-[200px] truncate font-medium leading-tight">
+                                  {account.displayName}
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent side="top" align="start">
+                                {account.displayName}
+                              </TooltipContent>
+                            </Tooltip>
                             <Badge variant="secondary" appearance="light" className="capitalize">
                               {account.platform.toLowerCase()}
                             </Badge>
@@ -225,7 +237,7 @@ export function WatchlistAccountsTable({
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="align-top py-4 text-right">
+                    <TableCell className="sticky right-0 z-10 align-top bg-background py-4 text-right shadow-[inset_1px_0_0_theme(colors.border)]">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon" className="size-8">

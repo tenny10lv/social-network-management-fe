@@ -9,6 +9,7 @@ export interface MyThreadsAccount {
   status: 'active' | 'paused';
   isPrimary?: boolean;
   lastPublishedAt?: string | null;
+  avatarUrl?: string;
 }
 
 export interface WatchlistAccount {
@@ -27,6 +28,18 @@ export interface WatchlistAccount {
   avatarUrl: string;
 }
 
+export interface PostMediaImage {
+  src: string;
+  full?: string;
+  alt?: string;
+}
+
+export interface PostMediaVideo {
+  src: string;
+  thumbnail?: string;
+  title?: string;
+}
+
 export interface CrawledPost {
   id: string;
   watchlistAccountId: string;
@@ -36,6 +49,8 @@ export interface CrawledPost {
   topics: string[];
   mediaType: 'text' | 'image' | 'video';
   previewImage?: string;
+  images?: PostMediaImage[];
+  videos?: PostMediaVideo[];
   status: 'draft' | 'ready' | 'scheduled' | 'published';
   scheduledFor?: string;
   publishedAt?: string;

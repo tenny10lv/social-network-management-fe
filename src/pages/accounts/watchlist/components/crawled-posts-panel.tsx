@@ -23,6 +23,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { CrawledPost, WatchlistAccount } from '../types';
 import { EllipsisVertical, Pencil, Send, Timer, TrendingUp } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { PostMediaThumbnails } from './post-media-thumbnails';
+import { MediaViewerDialog } from './media-viewer-dialog';
 
 const PAGE_SIZE_OPTIONS = [5, 10, 20];
 
@@ -44,10 +47,20 @@ export function CrawledPostsPanel({ account, posts, onOpenEditor, onOpenSchedule
   const [statusFilter, setStatusFilter] = useState<'pipeline' | 'scheduled' | 'published' | 'all'>('pipeline');
   const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0]);
   const [page, setPage] = useState(1);
+  const [mediaViewer, setMediaViewer] = useState<{ postId: string; type: 'images' | 'videos' } | null>(null);
 
   const sortedPosts = useMemo(
     () =>
       [...posts].sort((a, b) => new Date(b.capturedAt).getTime() - new Date(a.capturedAt).getTime()),
+    [posts],
+  );
+
+  const postsById = useMemo(
+    () =>
+      posts.reduce<Record<string, CrawledPost>>((accumulator, post) => {
+        accumulator[post.id] = post;
+        return accumulator;
+      }, {}),
     [posts],
   );
 
@@ -127,21 +140,25 @@ export function CrawledPostsPanel({ account, posts, onOpenEditor, onOpenSchedule
         </CardToolbar>
       </CardHeader>
       <CardTable>
-        <ScrollArea>
+        <ScrollArea className="max-h-[480px]" viewportClassName="max-h-[480px] pr-2">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Post</TableHead>
+              <TableRow className="[&>th]:sticky [&>th]:top-0 [&>th]:z-10 [&>th]:bg-background">
+                <TableHead className="min-w-[320px]">Post</TableHead>
+                <TableHead className="min-w-[200px]">Images</TableHead>
+                <TableHead className="min-w-[200px]">Videos</TableHead>
                 <TableHead className="w-[180px]">Captured</TableHead>
-                <TableHead className="w-[180px]">Status</TableHead>
-                <TableHead className="w-[200px]">Engagement</TableHead>
-                <TableHead className="w-[60px] text-right">Actions</TableHead>
+                <TableHead className="w-[200px]">Status</TableHead>
+                <TableHead className="w-[220px]">Engagement</TableHead>
+                <TableHead className="sticky right-0 z-20 w-[96px] bg-background text-right shadow-[inset_1px_0_0_theme(colors.border)]">
+                  Actions
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {currentRecords.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="py-10 text-center text-sm text-muted-foreground">
+                  <TableCell colSpan={7} className="py-10 text-center text-sm text-muted-foreground">
                     {posts.length === 0
                       ? 'No crawled posts yet for this account.'
                       : 'No posts match your filters.'}
@@ -150,7 +167,7 @@ export function CrawledPostsPanel({ account, posts, onOpenEditor, onOpenSchedule
               ) : (
                 currentRecords.map((post) => (
                   <TableRow key={post.id}>
-                    <TableCell className="align-top py-4">
+                    <TableCell className="min-w-[320px] align-top py-4">
                       <div className="flex flex-col gap-2">
                         <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
                           {post.topics.map((topic) => (
@@ -159,8 +176,31 @@ export function CrawledPostsPanel({ account, posts, onOpenEditor, onOpenSchedule
                             </Badge>
                           ))}
                         </div>
-                        <p className="text-sm leading-relaxed text-foreground">{post.content}</p>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <p className="max-w-[520px] cursor-default text-sm leading-relaxed text-foreground line-clamp-3">
+                              {post.content}
+                            </p>
+                          </TooltipTrigger>
+                          <TooltipContent align="start" className="max-w-sm text-sm leading-relaxed">
+                            {post.content}
+                          </TooltipContent>
+                        </Tooltip>
                       </div>
+                    </TableCell>
+                    <TableCell className="align-top py-4">
+                      <PostMediaThumbnails
+                        type="images"
+                        images={post.images}
+                        onClick={() => setMediaViewer({ postId: post.id, type: 'images' })}
+                      />
+                    </TableCell>
+                    <TableCell className="align-top py-4">
+                      <PostMediaThumbnails
+                        type="videos"
+                        videos={post.videos}
+                        onClick={() => setMediaViewer({ postId: post.id, type: 'videos' })}
+                      />
                     </TableCell>
                     <TableCell className="align-top py-4">
                       <div className="flex flex-col gap-1">
@@ -209,7 +249,7 @@ export function CrawledPostsPanel({ account, posts, onOpenEditor, onOpenSchedule
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="align-top py-4 text-right">
+                    <TableCell className="sticky right-0 z-10 align-top bg-background py-4 text-right shadow-[inset_1px_0_0_theme(colors.border)]">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon" className="size-8">
@@ -294,6 +334,24 @@ export function CrawledPostsPanel({ account, posts, onOpenEditor, onOpenSchedule
           {currentRecords.length} post{currentRecords.length === 1 ? '' : 's'} on this page.
         </span>
       </CardFooter>
+      <MediaViewerDialog
+        open={Boolean(mediaViewer)}
+        type={mediaViewer?.type ?? 'images'}
+        title={
+          mediaViewer
+            ? `${mediaViewer.type === 'images' ? 'Images' : 'Videos'} • ${
+                postsById[mediaViewer.postId]?.topics.join(', ') ?? 'Post media'
+              }`
+            : ''
+        }
+        images={mediaViewer?.type === 'images' ? postsById[mediaViewer.postId]?.images : undefined}
+        videos={mediaViewer?.type === 'videos' ? postsById[mediaViewer.postId]?.videos : undefined}
+        onOpenChange={(openState) => {
+          if (!openState) {
+            setMediaViewer(null);
+          }
+        }}
+      />
     </Card>
   );
 }
