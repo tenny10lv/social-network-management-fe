@@ -90,7 +90,7 @@ export function PublishedHistoryPanel({ tasks, posts, myAccounts, onOpenEditor }
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="py-5">
         <CardHeading>
           <CardTitle>Published History</CardTitle>
           <p className="text-sm text-muted-foreground">

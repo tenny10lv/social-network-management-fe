@@ -99,7 +99,7 @@ export function ScheduledPostsPanel({
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="py-5">
         <CardHeading>
           <CardTitle>Scheduled Posts</CardTitle>
           <p className="text-sm text-muted-foreground">
