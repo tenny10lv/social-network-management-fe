@@ -59,7 +59,7 @@ import {
   NetworkVisitorsPage,
 } from '@/pages/network';
 import { BrowserContextsModulePage } from '@/pages/browser-contexts';
-import { AccountModulePage } from '@/pages/accounts';
+import { AccountModulePage, WatchlistModulePage } from '@/pages/accounts';
 import { ContentModulePage } from '@/pages/contents';
 import { PublishingModulePage } from '@/pages/publishing';
 import {
@@ -338,6 +338,7 @@ export function AppRoutingSetup() {
             element={<NetworkVisitorsPage />}
           />
           <Route path="/accounts" element={<AccountModulePage />} />
+          <Route path="/accounts/watchlist" element={<WatchlistModulePage />} />
           <Route path="/contents" element={<ContentModulePage />} />
           <Route path="/browser-contexts" element={<BrowserContextsModulePage />} />
           <Route path="/publishing" element={<PublishingModulePage />} />
