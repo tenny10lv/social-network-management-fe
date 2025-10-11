@@ -143,12 +143,12 @@ export function WatchlistAccountsTable({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[220px]">Account</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead className="w-[180px]">Last Crawled</TableHead>
-                <TableHead>Tags</TableHead>
-                <TableHead className="w-[120px]">Status</TableHead>
-                <TableHead className="w-[60px] text-right">Actions</TableHead>
+                <TableHead className="min-w-[260px]">Account</TableHead>
+                <TableHead className="min-w-[200px]">Category</TableHead>
+                <TableHead className="min-w-[220px]">Last Crawled</TableHead>
+                <TableHead className="min-w-[200px]">Tags</TableHead>
+                <TableHead className="w-[140px]">Status</TableHead>
+                <TableHead className="w-[80px] text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
