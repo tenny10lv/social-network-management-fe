@@ -242,7 +242,7 @@ export function CrawledPostsPanel({ account, posts, onOpenEditor, onOpenSchedule
                               </Badge>
                               <Badge
                                 variant={sentimentVariantMap[post.sentiment]}
-                                appearance="soft"
+                                appearance="light"
                                 className="whitespace-nowrap capitalize"
                               >
                                 {formatSentimentLabel(post.sentiment)}

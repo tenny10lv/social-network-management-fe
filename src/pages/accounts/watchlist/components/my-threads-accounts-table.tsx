@@ -111,7 +111,7 @@ export function MyThreadsAccountsTable({ accounts, onSetPrimary, onToggleStatus 
                 <TableHead className="w-[72px]">Avatar</TableHead>
                 <TableHead>Account</TableHead>
                 <TableHead className="w-[140px]">Followers</TableHead>
-                <TableHead className="w-[180px]">Publishing Window</TableHead>
+                <TableHead className="w-[280px]">Publishing Window</TableHead>
                 <TableHead className="w-[180px]">Last Activity</TableHead>
                 <TableHead className="w-[60px] text-right">Actions</TableHead>
               </TableRow>
@@ -137,7 +137,7 @@ export function MyThreadsAccountsTable({ accounts, onSetPrimary, onToggleStatus 
                         <div className="flex items-center gap-2">
                           <span className="font-medium leading-tight">{account.displayName}</span>
                           {account.isPrimary && (
-                            <Badge variant="primary" appearance="soft" className="flex items-center gap-1 text-xs">
+                            <Badge variant="primary" appearance="light" className="flex items-center gap-1 text-xs">
                               <ShieldCheck className="size-3.5" /> Primary
                             </Badge>
                           )}

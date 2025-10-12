@@ -78,7 +78,7 @@ export function NetworkProxiesContent() {
   const [selectedProxyId, setSelectedProxyId] = useState<string | null>(null);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [pingingProxyId, setPingingProxyId] = useState<string | null>(null);
-  const [lastPingIps, setLastPingIps] = useState<Record<string, string>>({});
+  const [setLastPingIps] = useState<Record<string, string>>({});
 
   const proxiesQuery = useQuery({
     queryKey: ['proxies', page, limit],

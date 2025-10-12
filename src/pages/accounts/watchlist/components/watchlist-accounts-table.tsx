@@ -151,7 +151,7 @@ export function WatchlistAccountsTable({
                 <TableHead className="min-w-[200px]">Category</TableHead>
                 <TableHead className="min-w-[220px]">Last Crawled</TableHead>
                 <TableHead className="min-w-[200px]">Tags</TableHead>
-                <TableHead className="w-[140px]">Status</TableHead>
+                <TableHead className="min-w-[180px]">Status</TableHead>
                 <TableHead className={cn(stickyActionsColumnClasses, 'z-30')}>
                   Actions
                 </TableHead>
