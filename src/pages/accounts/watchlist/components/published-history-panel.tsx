@@ -18,7 +18,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Pagination, PaginationContent, PaginationItem } from '@/components/ui/pagination';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ArrowUpRight, EllipsisVertical, FilePenLine } from 'lucide-react';
@@ -26,6 +25,15 @@ import { CrawledPost, MyThreadsAccount, PublishingTask } from '../types';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { PostMediaThumbnails } from './post-media-thumbnails';
 import { MediaViewerDialog } from './media-viewer-dialog';
+import { cn } from '@/lib/utils';
+import {
+  stickyActionsColumnBaseClasses,
+  tableBodyClassName,
+  tableClassName,
+  tableHeaderCellClasses,
+  tableHeaderClassName,
+  tableWrapperClassName,
+} from './table-styles';
 
 const PAGE_SIZE_OPTIONS = [5, 10, 20];
 
@@ -131,25 +139,34 @@ export function PublishedHistoryPanel({ tasks, posts, myAccounts, onOpenEditor }
           </div>
         </CardToolbar>
       </CardHeader>
-      <CardTable>
-        <ScrollArea className="max-h-[420px]" viewportClassName="max-h-[420px] pr-2">
-          <Table>
-            <TableHeader>
-              <TableRow className="[&>th]:sticky [&>th]:top-0 [&>th]:z-10 [&>th]:bg-background">
-                <TableHead className="min-w-[320px]">Post</TableHead>
-                <TableHead className="min-w-[200px]">Images</TableHead>
-                <TableHead className="min-w-[200px]">Videos</TableHead>
-                <TableHead className="min-w-[220px]">Published To</TableHead>
-                <TableHead className="w-[200px]">Published At</TableHead>
-                <TableHead className="sticky right-0 z-20 w-[96px] bg-background text-right shadow-[inset_1px_0_0_theme(colors.border)]">
+      <CardTable className="overflow-hidden">
+        <Table className={tableClassName} wrapperClassName={tableWrapperClassName}>
+            <TableHeader className={tableHeaderClassName}>
+              <TableRow className="[&>th]:whitespace-nowrap">
+                <TableHead className={cn(tableHeaderCellClasses, 'min-w-[320px] text-left')}>Post</TableHead>
+                <TableHead className={cn(tableHeaderCellClasses, 'min-w-[200px] text-left')}>Images</TableHead>
+                <TableHead className={cn(tableHeaderCellClasses, 'min-w-[200px] text-left')}>Videos</TableHead>
+                <TableHead className={cn(tableHeaderCellClasses, 'min-w-[220px] text-left')}>
+                  Published To
+                </TableHead>
+                <TableHead className={cn(tableHeaderCellClasses, 'w-[220px] min-w-[220px] text-left')}>
+                  Published At
+                </TableHead>
+                <TableHead
+                  className={cn(
+                    tableHeaderCellClasses,
+                    stickyActionsColumnBaseClasses,
+                    'z-40 w-[124px] min-w-[124px] max-w-[124px] text-right',
+                  )}
+                >
                   Actions
                 </TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody>
+            <TableBody className={tableBodyClassName}>
               {currentRecords.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">
+                  <TableCell colSpan={6} className="px-5 py-10 text-center text-sm text-muted-foreground">
                     {tasks.length === 0
                       ? 'No published history yet. Publish or schedule posts to build history.'
                       : 'No published posts match your filters.'}
@@ -161,8 +178,8 @@ export function PublishedHistoryPanel({ tasks, posts, myAccounts, onOpenEditor }
                   const targetAccount = resolveTargetAccount(task.targetAccountId);
 
                   return (
-                    <TableRow key={task.id}>
-                      <TableCell className="min-w-[320px] align-top py-4">
+                    <TableRow key={task.id} className="group transition-colors hover:bg-muted/40">
+                      <TableCell className="min-w-[320px] align-top px-5 py-4">
                         <div className="flex flex-col gap-2">
                           <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
                             {post?.topics.map((topic) => (
@@ -186,21 +203,21 @@ export function PublishedHistoryPanel({ tasks, posts, myAccounts, onOpenEditor }
                           )}
                         </div>
                       </TableCell>
-                      <TableCell className="align-top py-4">
+                      <TableCell className="align-top px-5 py-4">
                         <PostMediaThumbnails
                           type="images"
                           images={post?.images}
                           onClick={() => post && setMediaViewer({ postId: post.id, type: 'images' })}
                         />
                       </TableCell>
-                      <TableCell className="align-top py-4">
+                      <TableCell className="align-top px-5 py-4">
                         <PostMediaThumbnails
                           type="videos"
                           videos={post?.videos}
                           onClick={() => post && setMediaViewer({ postId: post.id, type: 'videos' })}
                         />
                       </TableCell>
-                      <TableCell className="align-top py-4">
+                      <TableCell className="align-top px-5 py-4">
                         {targetAccount ? (
                           <div className="flex flex-col gap-1">
                             <span className="text-sm font-medium leading-tight">{targetAccount.displayName}</span>
@@ -210,13 +227,18 @@ export function PublishedHistoryPanel({ tasks, posts, myAccounts, onOpenEditor }
                           <span className="text-xs text-muted-foreground">Unknown account</span>
                         )}
                       </TableCell>
-                      <TableCell className="align-top py-4">
+                      <TableCell className="align-top px-5 py-4">
                         <div className="flex flex-col gap-1">
                           <span className="text-sm font-medium leading-tight">{formatTimestamp(task.executedAt)}</span>
                           <span className="text-xs text-muted-foreground">Action type: {task.action}</span>
                         </div>
                       </TableCell>
-                      <TableCell className="sticky right-0 z-10 align-top bg-background py-4 text-right shadow-[inset_1px_0_0_theme(colors.border)]">
+                      <TableCell
+                        className={cn(
+                          stickyActionsColumnBaseClasses,
+                          'z-40 w-[124px] min-w-[124px] max-w-[124px] align-top px-5 py-4 transition-colors group-hover:bg-muted/40',
+                        )}
+                      >
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon" className="size-8">
@@ -240,9 +262,7 @@ export function PublishedHistoryPanel({ tasks, posts, myAccounts, onOpenEditor }
                 })
               )}
             </TableBody>
-          </Table>
-          <ScrollBar orientation="horizontal" />
-        </ScrollArea>
+        </Table>
       </CardTable>
       <CardContent className="border-t pt-4">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
