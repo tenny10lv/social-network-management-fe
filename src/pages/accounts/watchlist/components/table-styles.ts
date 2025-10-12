@@ -12,7 +12,7 @@ export const tableHeaderCellClasses =
   'px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground align-middle';
 
 export const stickyActionsColumnBaseClasses =
-  'sticky right-0 bg-background text-right shadow-[inset_1px_0_0_theme(colors.border)] supports-[backdrop-filter]:bg-background/90 backdrop-blur';
+  'sticky right-0 bg-background shadow-[inset_1px_0_0_theme(colors.border)] supports-[backdrop-filter]:bg-background/90 backdrop-blur';
 
 export const stickyActionsColumnWidthClasses =
-  'w-[64px] min-w-[64px] max-w-[64px] px-3';
+  'w-[80px] min-w-[80px] max-w-[80px] px-[10px]';

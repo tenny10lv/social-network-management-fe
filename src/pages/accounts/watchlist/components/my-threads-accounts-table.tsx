@@ -113,7 +113,9 @@ export function MyThreadsAccountsTable({ accounts, onSetPrimary, onToggleStatus 
                 <TableHead className="w-[180px]">Followers</TableHead>
                 <TableHead className="w-[280px]">Publishing Window</TableHead>
                 <TableHead className="w-[180px]">Last Activity</TableHead>
-                <TableHead className="w-[64px] px-3 text-right">Actions</TableHead>
+                <TableHead className="w-[80px] min-w-[80px] max-w-[80px] px-[10px] text-center">
+                  Actions
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody className="[&>tr]:border-border/70">
@@ -165,7 +167,7 @@ export function MyThreadsAccountsTable({ accounts, onSetPrimary, onToggleStatus 
                         </Badge>
                       </div>
                     </TableCell>
-                    <TableCell className="align-top px-3 py-4 text-right">
+                    <TableCell className="align-top px-[10px] py-4 text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon" className="size-8">
