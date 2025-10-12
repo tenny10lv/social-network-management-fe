@@ -18,7 +18,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Pagination, PaginationContent, PaginationItem } from '@/components/ui/pagination';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -33,7 +32,10 @@ const formatDateTime = (value: string) =>
   format(new Date(value), 'MMM d, yyyy • HH:mm');
 
 const stickyActionsColumnClasses =
-  'sticky right-0 min-w-[108px] max-w-[108px] bg-background text-right shadow-[inset_1px_0_0_theme(colors.border)]';
+  'sticky right-0 min-w-[124px] max-w-[124px] bg-background text-right shadow-[inset_1px_0_0_theme(colors.border)]';
+
+const tableGridTemplateClasses =
+  '[&>tr]:grid [&>tr]:grid-cols-[minmax(320px,_1.4fr)_minmax(200px,_1fr)_minmax(220px,_1fr)_minmax(320px,_1.1fr)_140px_124px] [&>tr]:items-stretch';
 
 interface WatchlistAccountsTableProps {
   accounts: WatchlistAccount[];
@@ -142,28 +144,47 @@ export function WatchlistAccountsTable({
           </div>
         </CardToolbar>
       </CardHeader>
-      <CardTable>
-        <ScrollArea>
-          <Table>
-            <TableHeader>
-              <TableRow className="[&>th]:sticky [&>th]:top-0 [&>th]:z-10 [&>th]:bg-background">
-                <TableHead className="min-w-[320px]">Account</TableHead>
-                <TableHead className="min-w-[200px]">Category</TableHead>
-                <TableHead className="min-w-[220px]">Last Crawled</TableHead>
-                <TableHead className="min-w-[200px]">Tags</TableHead>
-                <TableHead className="min-w-[180px]">Status</TableHead>
-                <TableHead className={cn(stickyActionsColumnClasses, 'z-30')}>
-                  Actions
-                </TableHead>
+      <CardTable className="overflow-hidden">
+        <Table
+          wrapperClassName="overflow-x-auto"
+          className={cn(
+            'min-w-full border-separate border-spacing-0',
+          )}
+        >
+          <TableHeader
+            className={cn(
+              'z-20 bg-background',
+              tableGridTemplateClasses,
+              '[&>tr]:border-b [&>tr>th]:sticky [&>tr>th]:top-0 [&>tr>th]:z-20 [&>tr>th]:bg-background',
+            )}
+          >
+            <TableRow>
+              <TableHead className="min-w-[320px]">Account</TableHead>
+              <TableHead className="min-w-[200px]">Category</TableHead>
+              <TableHead className="min-w-[220px]">Last Crawled</TableHead>
+              <TableHead className="min-w-[280px]">Tags</TableHead>
+              <TableHead className="w-[140px]">Status</TableHead>
+              <TableHead className={cn(stickyActionsColumnClasses, 'z-30')}>
+                Actions
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody
+            className={cn(
+              'block max-h-[480px] min-w-full overflow-y-auto',
+              tableGridTemplateClasses,
+              '[&>tr]:border-b [&>tr:last-child]:border-0',
+            )}
+          >
+            {currentRecords.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  colSpan={6}
+                  className="col-span-full py-10 text-center text-sm text-muted-foreground"
+                >
+                  No accounts match your filters.
+                </TableCell>
               </TableRow>
-            </TableHeader>
-            <TableBody>
-              {currentRecords.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">
-                    No accounts match your filters.
-                  </TableCell>
-                </TableRow>
               ) : (
                 currentRecords.map((account) => (
                   <TableRow
@@ -216,7 +237,7 @@ export function WatchlistAccountsTable({
                         <span className="text-xs text-muted-foreground">{account.crawlFrequency} crawl</span>
                       </div>
                     </TableCell>
-                    <TableCell className="align-top py-4">
+                    <TableCell className="min-w-[280px] align-top py-4">
                       <div className="flex flex-wrap gap-1.5">
                         {account.tags.map((tag) => (
                           <Badge key={tag} variant="outline" className="text-xs font-medium">
@@ -243,7 +264,7 @@ export function WatchlistAccountsTable({
                     <TableCell
                       className={cn(
                         stickyActionsColumnClasses,
-                        'z-20 align-top py-4 transition-colors group-hover:bg-muted/40 group-data-[state=selected]:bg-primary/5',
+                        'z-30 align-top py-4 transition-colors group-hover:bg-muted/40 group-data-[state=selected]:bg-primary/5',
                       )}
                     >
                       <DropdownMenu>
@@ -275,8 +296,6 @@ export function WatchlistAccountsTable({
               )}
             </TableBody>
           </Table>
-          <ScrollBar orientation="horizontal" />
-        </ScrollArea>
       </CardTable>
       <CardContent className="border-t pt-4">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
