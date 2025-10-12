@@ -26,8 +26,12 @@ import { EllipsisVertical, Pencil, Send, Timer, TrendingUp } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { PostMediaThumbnails } from './post-media-thumbnails';
 import { MediaViewerDialog } from './media-viewer-dialog';
+import { cn } from '@/lib/utils';
 
 const PAGE_SIZE_OPTIONS = [5, 10, 20];
+
+const stickyActionsColumnClasses =
+  'sticky right-0 min-w-[108px] max-w-[108px] bg-background text-right shadow-[inset_1px_0_0_theme(colors.border)]';
 
 interface CrawledPostsPanelProps {
   account?: WatchlistAccount | null;
@@ -41,6 +45,13 @@ const sentimentVariantMap: Record<CrawledPost['sentiment'], 'success' | 'seconda
   neutral: 'secondary',
   negative: 'destructive',
 };
+
+const formatMediaType = (value: CrawledPost['mediaType']) => value.charAt(0).toUpperCase() + value.slice(1);
+
+const formatStatusLabel = (value: CrawledPost['status']) => value.charAt(0).toUpperCase() + value.slice(1);
+
+const formatSentimentLabel = (value: CrawledPost['sentiment']) =>
+  `${value.charAt(0).toUpperCase() + value.slice(1)} Sentiment`;
 
 export function CrawledPostsPanel({ account, posts, onOpenEditor, onOpenSchedule }: CrawledPostsPanelProps) {
   const [searchQuery, setSearchQuery] = useState('');
@@ -147,10 +158,10 @@ export function CrawledPostsPanel({ account, posts, onOpenEditor, onOpenSchedule
                 <TableHead className="min-w-[320px]">Post</TableHead>
                 <TableHead className="min-w-[200px]">Images</TableHead>
                 <TableHead className="min-w-[200px]">Videos</TableHead>
-                <TableHead className="w-[180px]">Captured</TableHead>
-                <TableHead className="w-[200px]">Status</TableHead>
+                <TableHead className="min-w-[280px] max-w-[280px]">Captured</TableHead>
+                <TableHead className="min-w-[320px] max-w-[320px]">Status</TableHead>
                 <TableHead className="w-[220px]">Engagement</TableHead>
-                <TableHead className="sticky right-0 z-20 w-[96px] bg-background text-right shadow-[inset_1px_0_0_theme(colors.border)]">
+                <TableHead className={cn(stickyActionsColumnClasses, 'z-30')}>
                   Actions
                 </TableHead>
               </TableRow>
@@ -165,92 +176,118 @@ export function CrawledPostsPanel({ account, posts, onOpenEditor, onOpenSchedule
                   </TableCell>
                 </TableRow>
               ) : (
-                currentRecords.map((post) => (
-                  <TableRow key={post.id}>
-                    <TableCell className="min-w-[320px] align-top py-4">
-                      <div className="flex flex-col gap-2">
-                        <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
-                          {post.topics.map((topic) => (
-                            <Badge key={topic} variant="outline" className="text-xs font-medium">
-                              #{topic}
-                            </Badge>
-                          ))}
+                currentRecords.map((post) => {
+                  const capturedLabel = `${formatTimestamp(post.capturedAt)} • ${formatMediaType(post.mediaType)}`;
+                  const statusLabel = `${formatStatusLabel(post.status)} • ${formatSentimentLabel(post.sentiment)}`;
+
+                  return (
+                    <TableRow key={post.id} className="group transition-colors hover:bg-muted/40">
+                      <TableCell className="min-w-[320px] align-top py-4">
+                        <div className="flex flex-col gap-2">
+                          <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+                            {post.topics.map((topic) => (
+                              <Badge key={topic} variant="outline" className="text-xs font-medium">
+                                #{topic}
+                              </Badge>
+                            ))}
+                          </div>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <p className="max-w-[520px] cursor-default text-sm leading-relaxed text-foreground line-clamp-3">
+                                {post.content}
+                              </p>
+                            </TooltipTrigger>
+                            <TooltipContent align="start" className="max-w-sm text-sm leading-relaxed">
+                              {post.content}
+                            </TooltipContent>
+                          </Tooltip>
                         </div>
+                      </TableCell>
+                      <TableCell className="align-top py-4">
+                        <PostMediaThumbnails
+                          type="images"
+                          images={post.images}
+                          onClick={() => setMediaViewer({ postId: post.id, type: 'images' })}
+                        />
+                      </TableCell>
+                      <TableCell className="align-top py-4">
+                        <PostMediaThumbnails
+                          type="videos"
+                          videos={post.videos}
+                          onClick={() => setMediaViewer({ postId: post.id, type: 'videos' })}
+                        />
+                      </TableCell>
+                      <TableCell className="min-w-[280px] max-w-[280px] align-top py-4">
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <p className="max-w-[520px] cursor-default text-sm leading-relaxed text-foreground line-clamp-3">
-                              {post.content}
+                            <p className="truncate whitespace-nowrap text-sm font-medium leading-tight text-foreground">
+                              {capturedLabel}
                             </p>
                           </TooltipTrigger>
-                          <TooltipContent align="start" className="max-w-sm text-sm leading-relaxed">
-                            {post.content}
+                          <TooltipContent align="start" className="text-sm leading-tight">
+                            {capturedLabel}
                           </TooltipContent>
                         </Tooltip>
-                      </div>
-                    </TableCell>
-                    <TableCell className="align-top py-4">
-                      <PostMediaThumbnails
-                        type="images"
-                        images={post.images}
-                        onClick={() => setMediaViewer({ postId: post.id, type: 'images' })}
-                      />
-                    </TableCell>
-                    <TableCell className="align-top py-4">
-                      <PostMediaThumbnails
-                        type="videos"
-                        videos={post.videos}
-                        onClick={() => setMediaViewer({ postId: post.id, type: 'videos' })}
-                      />
-                    </TableCell>
-                    <TableCell className="align-top py-4">
-                      <div className="flex flex-col gap-1">
-                        <span className="text-sm font-medium leading-tight">{formatTimestamp(post.capturedAt)}</span>
-                        <span className="text-xs text-muted-foreground capitalize">{post.mediaType}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="align-top py-4">
-                      <div className="flex flex-col gap-1">
-                        <Badge
-                          variant={post.status === 'ready' ? 'primary' : post.status === 'draft' ? 'secondary' : 'success'}
-                          appearance="light"
-                          className="w-fit capitalize"
-                        >
-                          {post.status}
-                        </Badge>
-                        <Badge
-                          variant={sentimentVariantMap[post.sentiment]}
-                          appearance="soft"
-                          className="w-fit capitalize"
-                        >
-                          {post.sentiment} sentiment
-                        </Badge>
+                      </TableCell>
+                      <TableCell className="min-w-[320px] max-w-[320px] align-top py-4">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="flex min-w-0 items-center gap-2 truncate whitespace-nowrap">
+                              <Badge
+                                variant={post.status === 'ready' ? 'primary' : post.status === 'draft' ? 'secondary' : 'success'}
+                                appearance="light"
+                                className="whitespace-nowrap capitalize"
+                              >
+                                {formatStatusLabel(post.status)}
+                              </Badge>
+                              <Badge
+                                variant={sentimentVariantMap[post.sentiment]}
+                                appearance="soft"
+                                className="whitespace-nowrap capitalize"
+                              >
+                                {formatSentimentLabel(post.sentiment)}
+                              </Badge>
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent align="start" className="text-sm leading-tight">
+                            {statusLabel}
+                          </TooltipContent>
+                        </Tooltip>
                         {post.status === 'scheduled' && (
-                          <span className="text-xs text-muted-foreground">Scheduled {formatTimestamp(post.scheduledFor)}</span>
+                          <span className="mt-1 block whitespace-nowrap text-xs text-muted-foreground">
+                            Scheduled {formatTimestamp(post.scheduledFor)}
+                          </span>
                         )}
                         {post.status === 'published' && (
-                          <span className="text-xs text-muted-foreground">Published {formatTimestamp(post.publishedAt)}</span>
+                          <span className="mt-1 block whitespace-nowrap text-xs text-muted-foreground">
+                            Published {formatTimestamp(post.publishedAt)}
+                          </span>
                         )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="align-top py-4">
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                          <TrendingUp className="size-3.5 text-foreground" />
-                          <span className="font-semibold text-foreground">{post.likes.toLocaleString()}</span>
-                          <span>likes</span>
+                      </TableCell>
+                      <TableCell className="align-top py-4">
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <div className="flex items-center gap-1">
+                            <TrendingUp className="size-3.5 text-foreground" />
+                            <span className="font-semibold text-foreground">{post.likes.toLocaleString()}</span>
+                            <span>likes</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <span className="font-semibold text-foreground">{post.replies.toLocaleString()}</span>
+                            <span>replies</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <span className="font-semibold text-foreground">{post.reposts.toLocaleString()}</span>
+                            <span>reposts</span>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <span className="font-semibold text-foreground">{post.replies.toLocaleString()}</span>
-                          <span>replies</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <span className="font-semibold text-foreground">{post.reposts.toLocaleString()}</span>
-                          <span>reposts</span>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="sticky right-0 z-10 align-top bg-background py-4 text-right shadow-[inset_1px_0_0_theme(colors.border)]">
-                      <DropdownMenu>
+                      </TableCell>
+                      <TableCell
+                        className={cn(
+                          stickyActionsColumnClasses,
+                          'z-20 align-top py-4 transition-colors group-hover:bg-muted/40',
+                        )}
+                      >
+                        <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon" className="size-8">
                             <EllipsisVertical className="size-4" />
@@ -271,9 +308,10 @@ export function CrawledPostsPanel({ account, posts, onOpenEditor, onOpenSchedule
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
               )}
             </TableBody>
           </Table>

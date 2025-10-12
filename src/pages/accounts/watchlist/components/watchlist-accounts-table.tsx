@@ -32,6 +32,9 @@ const PAGE_SIZE_OPTIONS = [5, 10, 20];
 const formatDateTime = (value: string) =>
   format(new Date(value), 'MMM d, yyyy • HH:mm');
 
+const stickyActionsColumnClasses =
+  'sticky right-0 min-w-[108px] max-w-[108px] bg-background text-right shadow-[inset_1px_0_0_theme(colors.border)]';
+
 interface WatchlistAccountsTableProps {
   accounts: WatchlistAccount[];
   selectedAccountId: string | null;
@@ -149,7 +152,7 @@ export function WatchlistAccountsTable({
                 <TableHead className="min-w-[220px]">Last Crawled</TableHead>
                 <TableHead className="min-w-[200px]">Tags</TableHead>
                 <TableHead className="w-[140px]">Status</TableHead>
-                <TableHead className="sticky right-0 z-20 w-[96px] bg-background text-right shadow-[inset_1px_0_0_theme(colors.border)]">
+                <TableHead className={cn(stickyActionsColumnClasses, 'z-30')}>
                   Actions
                 </TableHead>
               </TableRow>
@@ -167,7 +170,7 @@ export function WatchlistAccountsTable({
                     key={account.id}
                     data-state={account.id === selectedAccountId ? 'selected' : undefined}
                     className={cn(
-                      'cursor-pointer transition hover:bg-muted/40',
+                      'group cursor-pointer transition hover:bg-muted/40',
                       account.id === selectedAccountId && 'bg-primary/5',
                     )}
                     onClick={() => onSelectAccount(account.id)}
@@ -237,7 +240,12 @@ export function WatchlistAccountsTable({
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="sticky right-0 z-10 align-top bg-background py-4 text-right shadow-[inset_1px_0_0_theme(colors.border)]">
+                    <TableCell
+                      className={cn(
+                        stickyActionsColumnClasses,
+                        'z-20 align-top py-4 transition-colors group-hover:bg-muted/40 group-data-[state=selected]:bg-primary/5',
+                      )}
+                    >
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon" className="size-8">
