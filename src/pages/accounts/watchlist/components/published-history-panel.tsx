@@ -158,7 +158,7 @@ export function PublishedHistoryPanel({ tasks, posts, myAccounts, onOpenEditor }
                     tableHeaderCellClasses,
                     stickyActionsColumnBaseClasses,
                     stickyActionsColumnWidthClasses,
-                    'z-40 text-center',
+                    'z-[6] text-center',
                   )}
                 >
                   Actions
@@ -239,7 +239,7 @@ export function PublishedHistoryPanel({ tasks, posts, myAccounts, onOpenEditor }
                         className={cn(
                           stickyActionsColumnBaseClasses,
                           stickyActionsColumnWidthClasses,
-                          'z-40 align-top py-4 text-right transition-colors group-hover:bg-muted/40',
+                          'align-top py-4 text-right transition-colors group-hover:bg-muted/40',
                         )}
                       >
                         <DropdownMenu>

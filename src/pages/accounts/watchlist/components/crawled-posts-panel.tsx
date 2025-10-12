@@ -173,7 +173,7 @@ export function CrawledPostsPanel({ account, posts, onOpenEditor, onOpenSchedule
                 <TableHead className={cn(tableHeaderCellClasses, 'w-[220px] min-w-[220px] text-left')}>
                   Engagement
                 </TableHead>
-                <TableHead className={cn(tableHeaderCellClasses, stickyActionsColumnClasses, 'z-40 text-center')}>
+                <TableHead className={cn(tableHeaderCellClasses, stickyActionsColumnClasses, 'z-[6] text-center')}>
                   Actions
                 </TableHead>
               </TableRow>
@@ -296,7 +296,7 @@ export function CrawledPostsPanel({ account, posts, onOpenEditor, onOpenSchedule
                       <TableCell
                         className={cn(
                           stickyActionsColumnClasses,
-                          'z-40 align-top py-4 text-right transition-colors group-hover:bg-muted/40',
+                          'align-top py-4 text-right transition-colors group-hover:bg-muted/40',
                         )}
                       >
                         <DropdownMenu>

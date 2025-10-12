@@ -158,7 +158,7 @@ export function WatchlistAccountsTable({
                 <TableHead className={cn(tableHeaderCellClasses, 'min-w-[220px] text-left')}>Last Crawled</TableHead>
                 <TableHead className={cn(tableHeaderCellClasses, 'min-w-[320px] text-left')}>Tags</TableHead>
                 <TableHead className={cn(tableHeaderCellClasses, 'w-[160px] text-left')}>Status</TableHead>
-                <TableHead className={cn(tableHeaderCellClasses, stickyActionsColumnClasses, 'z-40 text-center')}>
+                <TableHead className={cn(tableHeaderCellClasses, stickyActionsColumnClasses, 'z-[6] text-center')}>
                   Actions
                 </TableHead>
               </TableRow>
@@ -252,7 +252,7 @@ export function WatchlistAccountsTable({
                     <TableCell
                       className={cn(
                         stickyActionsColumnClasses,
-                        'z-30 align-top py-4 text-right transition-colors group-hover:bg-muted/40 group-data-[state=selected]:bg-primary/5',
+                        'align-top py-4 text-right transition-colors group-hover:bg-muted/40 group-data-[state=selected]:bg-primary/5',
                       )}
                     >
                       <DropdownMenu>
