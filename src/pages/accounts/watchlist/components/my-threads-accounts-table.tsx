@@ -110,7 +110,7 @@ export function MyThreadsAccountsTable({ accounts, onSetPrimary, onToggleStatus 
               <TableRow>
                 <TableHead className="w-[72px]">Avatar</TableHead>
                 <TableHead>Account</TableHead>
-                <TableHead className="w-[140px]">Followers</TableHead>
+                <TableHead className="w-[180px]">Followers</TableHead>
                 <TableHead className="w-[280px]">Publishing Window</TableHead>
                 <TableHead className="w-[180px]">Last Activity</TableHead>
                 <TableHead className="w-[60px] text-right">Actions</TableHead>
