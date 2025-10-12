@@ -147,7 +147,7 @@ export function WatchlistAccountsTable({
       <CardTable className="overflow-hidden">
         <Table
           className="min-w-full border-separate border-spacing-0"
-          wrapperClassName="max-h-[480px] overflow-x-auto overflow-y-auto"
+          wrapperClassName="overflow-x-auto overflow-y-visible"
         >
             <TableHeader
               className="sticky top-0 z-30 [&>tr]:border-b [&>tr]:border-border/80 [&>tr]:bg-background [&>tr>th]:sticky [&>tr>th]:top-0 [&>tr>th]:z-30 [&>tr>th]:bg-background [&>tr>th]:supports-[backdrop-filter]:bg-background/95 [&>tr>th]:backdrop-blur"
