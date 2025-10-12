@@ -18,7 +18,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Pagination, PaginationContent, PaginationItem } from '@/components/ui/pagination';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { CrawledPost, WatchlistAccount } from '../types';
@@ -27,11 +26,18 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { PostMediaThumbnails } from './post-media-thumbnails';
 import { MediaViewerDialog } from './media-viewer-dialog';
 import { cn } from '@/lib/utils';
+import {
+  stickyActionsColumnBaseClasses,
+  tableBodyClassName,
+  tableClassName,
+  tableHeaderCellClasses,
+  tableHeaderClassName,
+  tableWrapperClassName,
+} from './table-styles';
 
 const PAGE_SIZE_OPTIONS = [5, 10, 20];
 
-const stickyActionsColumnClasses =
-  'sticky right-0 min-w-[108px] max-w-[108px] bg-background text-right shadow-[inset_1px_0_0_theme(colors.border)]';
+const stickyActionsColumnClasses = cn(stickyActionsColumnBaseClasses, 'min-w-[116px] max-w-[116px] w-[116px]');
 
 interface CrawledPostsPanelProps {
   account?: WatchlistAccount | null;
@@ -150,26 +156,31 @@ export function CrawledPostsPanel({ account, posts, onOpenEditor, onOpenSchedule
           </div>
         </CardToolbar>
       </CardHeader>
-      <CardTable>
-        <ScrollArea className="max-h-[480px]" viewportClassName="max-h-[480px] pr-2">
-          <Table>
-            <TableHeader>
-              <TableRow className="[&>th]:sticky [&>th]:top-0 [&>th]:z-10 [&>th]:bg-background">
-                <TableHead className="min-w-[320px]">Post</TableHead>
-                <TableHead className="min-w-[200px]">Images</TableHead>
-                <TableHead className="min-w-[200px]">Videos</TableHead>
-                <TableHead className="min-w-[280px] max-w-[280px]">Captured</TableHead>
-                <TableHead className="min-w-[320px] max-w-[320px]">Status</TableHead>
-                <TableHead className="w-[220px]">Engagement</TableHead>
-                <TableHead className={cn(stickyActionsColumnClasses, 'z-30')}>
+      <CardTable className="overflow-hidden">
+        <Table className={tableClassName} wrapperClassName={tableWrapperClassName}>
+            <TableHeader className={tableHeaderClassName}>
+              <TableRow className="[&>th]:whitespace-nowrap">
+                <TableHead className={cn(tableHeaderCellClasses, 'min-w-[320px] text-left')}>Post</TableHead>
+                <TableHead className={cn(tableHeaderCellClasses, 'min-w-[200px] text-left')}>Images</TableHead>
+                <TableHead className={cn(tableHeaderCellClasses, 'min-w-[200px] text-left')}>Videos</TableHead>
+                <TableHead className={cn(tableHeaderCellClasses, 'min-w-[280px] max-w-[280px] text-left')}>
+                  Captured
+                </TableHead>
+                <TableHead className={cn(tableHeaderCellClasses, 'min-w-[320px] max-w-[320px] text-left')}>
+                  Status
+                </TableHead>
+                <TableHead className={cn(tableHeaderCellClasses, 'w-[220px] min-w-[220px] text-left')}>
+                  Engagement
+                </TableHead>
+                <TableHead className={cn(tableHeaderCellClasses, stickyActionsColumnClasses, 'z-40 text-right')}>
                   Actions
                 </TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody>
+            <TableBody className={tableBodyClassName}>
               {currentRecords.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="py-10 text-center text-sm text-muted-foreground">
+                  <TableCell colSpan={7} className="px-5 py-10 text-center text-sm text-muted-foreground">
                     {posts.length === 0
                       ? 'No crawled posts yet for this account.'
                       : 'No posts match your filters.'}
@@ -182,7 +193,7 @@ export function CrawledPostsPanel({ account, posts, onOpenEditor, onOpenSchedule
 
                   return (
                     <TableRow key={post.id} className="group transition-colors hover:bg-muted/40">
-                      <TableCell className="min-w-[320px] align-top py-4">
+                      <TableCell className="min-w-[320px] align-top px-5 py-4">
                         <div className="flex flex-col gap-2">
                           <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
                             {post.topics.map((topic) => (
@@ -203,21 +214,21 @@ export function CrawledPostsPanel({ account, posts, onOpenEditor, onOpenSchedule
                           </Tooltip>
                         </div>
                       </TableCell>
-                      <TableCell className="align-top py-4">
+                      <TableCell className="align-top px-5 py-4">
                         <PostMediaThumbnails
                           type="images"
                           images={post.images}
                           onClick={() => setMediaViewer({ postId: post.id, type: 'images' })}
                         />
                       </TableCell>
-                      <TableCell className="align-top py-4">
+                      <TableCell className="align-top px-5 py-4">
                         <PostMediaThumbnails
                           type="videos"
                           videos={post.videos}
                           onClick={() => setMediaViewer({ postId: post.id, type: 'videos' })}
                         />
                       </TableCell>
-                      <TableCell className="min-w-[280px] max-w-[280px] align-top py-4">
+                      <TableCell className="min-w-[280px] max-w-[280px] align-top px-5 py-4">
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <p className="truncate whitespace-nowrap text-sm font-medium leading-tight text-foreground">
@@ -229,7 +240,7 @@ export function CrawledPostsPanel({ account, posts, onOpenEditor, onOpenSchedule
                           </TooltipContent>
                         </Tooltip>
                       </TableCell>
-                      <TableCell className="min-w-[320px] max-w-[320px] align-top py-4">
+                      <TableCell className="min-w-[320px] max-w-[320px] align-top px-5 py-4">
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <div className="flex min-w-0 items-center gap-2 truncate whitespace-nowrap">
@@ -264,7 +275,7 @@ export function CrawledPostsPanel({ account, posts, onOpenEditor, onOpenSchedule
                           </span>
                         )}
                       </TableCell>
-                      <TableCell className="align-top py-4">
+                      <TableCell className="align-top px-5 py-4">
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                           <div className="flex items-center gap-1">
                             <TrendingUp className="size-3.5 text-foreground" />
@@ -284,7 +295,7 @@ export function CrawledPostsPanel({ account, posts, onOpenEditor, onOpenSchedule
                       <TableCell
                         className={cn(
                           stickyActionsColumnClasses,
-                          'z-20 align-top py-4 transition-colors group-hover:bg-muted/40',
+                          'z-40 align-top px-5 py-4 transition-colors group-hover:bg-muted/40',
                         )}
                       >
                         <DropdownMenu>
@@ -314,9 +325,7 @@ export function CrawledPostsPanel({ account, posts, onOpenEditor, onOpenSchedule
                 })
               )}
             </TableBody>
-          </Table>
-          <ScrollBar orientation="horizontal" />
-        </ScrollArea>
+        </Table>
       </CardTable>
       <CardContent className="border-t pt-4">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">

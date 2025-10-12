@@ -24,6 +24,14 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
+import {
+  stickyActionsColumnBaseClasses,
+  tableBodyClassName,
+  tableClassName,
+  tableHeaderCellClasses,
+  tableHeaderClassName,
+  tableWrapperClassName,
+} from './table-styles';
 import { WatchlistAccount } from '../types';
 
 const PAGE_SIZE_OPTIONS = [5, 10, 20];
@@ -31,11 +39,10 @@ const PAGE_SIZE_OPTIONS = [5, 10, 20];
 const formatDateTime = (value: string) =>
   format(new Date(value), 'MMM d, yyyy • HH:mm');
 
-const stickyActionsColumnClasses =
-  'sticky right-0 w-[124px] min-w-[124px] max-w-[124px] bg-background text-right shadow-[inset_1px_0_0_theme(colors.border)] supports-[backdrop-filter]:bg-background/90 backdrop-blur';
-
-const tableHeaderCellClasses =
-  'px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground align-middle';
+const stickyActionsColumnClasses = cn(
+  stickyActionsColumnBaseClasses,
+  'w-[124px] min-w-[124px] max-w-[124px]',
+);
 
 interface WatchlistAccountsTableProps {
   accounts: WatchlistAccount[];
@@ -145,13 +152,8 @@ export function WatchlistAccountsTable({
         </CardToolbar>
       </CardHeader>
       <CardTable className="overflow-hidden">
-        <Table
-          className="min-w-full border-separate border-spacing-0"
-          wrapperClassName="overflow-x-auto overflow-y-visible"
-        >
-            <TableHeader
-              className="sticky top-0 z-30 [&>tr]:border-b [&>tr]:border-border/80 [&>tr]:bg-background [&>tr>th]:sticky [&>tr>th]:top-0 [&>tr>th]:z-30 [&>tr>th]:bg-background [&>tr>th]:supports-[backdrop-filter]:bg-background/95 [&>tr>th]:backdrop-blur"
-            >
+        <Table className={tableClassName} wrapperClassName={tableWrapperClassName}>
+            <TableHeader className={tableHeaderClassName}>
               <TableRow className="[&>th]:whitespace-nowrap">
                 <TableHead className={cn(tableHeaderCellClasses, 'min-w-[320px] text-left')}>Account</TableHead>
                 <TableHead className={cn(tableHeaderCellClasses, 'min-w-[200px] text-left')}>Category</TableHead>
@@ -161,7 +163,7 @@ export function WatchlistAccountsTable({
                 <TableHead className={cn(tableHeaderCellClasses, stickyActionsColumnClasses, 'z-40 text-right')}>Actions</TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody className="[&>tr]:border-b [&>tr:last-child]:border-0">
+            <TableBody className={tableBodyClassName}>
               {currentRecords.length === 0 ? (
               <TableRow>
                 <TableCell
