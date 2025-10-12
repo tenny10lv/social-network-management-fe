@@ -25,6 +25,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { WatchlistAccount } from '../types';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 const PAGE_SIZE_OPTIONS = [5, 10, 20];
 
@@ -32,10 +33,10 @@ const formatDateTime = (value: string) =>
   format(new Date(value), 'MMM d, yyyy • HH:mm');
 
 const stickyActionsColumnClasses =
-  'sticky right-0 min-w-[124px] max-w-[124px] bg-background text-right shadow-[inset_1px_0_0_theme(colors.border)]';
+  'sticky right-0 min-w-[124px] max-w-[124px] bg-background text-right shadow-[inset_1px_0_0_theme(colors.border)] supports-[backdrop-filter]:bg-background/90 backdrop-blur';
 
-const tableGridTemplateClasses =
-  '[&>tr]:grid [&>tr]:grid-cols-[minmax(320px,_1.4fr)_minmax(200px,_1fr)_minmax(220px,_1fr)_minmax(320px,_1.1fr)_140px_124px] [&>tr]:items-stretch';
+const tableHeaderCellClasses =
+  'px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground align-middle';
 
 interface WatchlistAccountsTableProps {
   accounts: WatchlistAccount[];
@@ -145,42 +146,26 @@ export function WatchlistAccountsTable({
         </CardToolbar>
       </CardHeader>
       <CardTable className="overflow-hidden">
-        <Table
-          wrapperClassName="overflow-x-auto"
-          className={cn(
-            'min-w-full border-separate border-spacing-0',
-          )}
-        >
-          <TableHeader
-            className={cn(
-              'z-20 bg-background',
-              tableGridTemplateClasses,
-              '[&>tr]:border-b [&>tr>th]:sticky [&>tr>th]:top-0 [&>tr>th]:z-20 [&>tr>th]:bg-background',
-            )}
-          >
-            <TableRow>
-              <TableHead className="min-w-[320px]">Account</TableHead>
-              <TableHead className="min-w-[200px]">Category</TableHead>
-              <TableHead className="min-w-[220px]">Last Crawled</TableHead>
-              <TableHead className="min-w-[280px]">Tags</TableHead>
-              <TableHead className="w-[140px]">Status</TableHead>
-              <TableHead className={cn(stickyActionsColumnClasses, 'z-30')}>
-                Actions
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody
-            className={cn(
-              'block max-h-[480px] min-w-full overflow-y-auto',
-              tableGridTemplateClasses,
-              '[&>tr]:border-b [&>tr:last-child]:border-0',
-            )}
-          >
-            {currentRecords.length === 0 ? (
+        <ScrollArea className="max-h-[480px]" viewportClassName="max-h-[480px]">
+          <Table className="min-w-full border-separate border-spacing-0">
+            <TableHeader
+              className="sticky top-0 z-30 [&>tr]:border-b [&>tr]:border-border/80 [&>tr]:bg-background [&>tr>th]:sticky [&>tr>th]:top-0 [&>tr>th]:z-30 [&>tr>th]:bg-background [&>tr>th]:supports-[backdrop-filter]:bg-background/95 [&>tr>th]:backdrop-blur"
+            >
+              <TableRow className="[&>th]:whitespace-nowrap">
+                <TableHead className={cn(tableHeaderCellClasses, 'min-w-[320px] text-left')}>Account</TableHead>
+                <TableHead className={cn(tableHeaderCellClasses, 'min-w-[200px] text-left')}>Category</TableHead>
+                <TableHead className={cn(tableHeaderCellClasses, 'min-w-[220px] text-left')}>Last Crawled</TableHead>
+                <TableHead className={cn(tableHeaderCellClasses, 'min-w-[320px] text-left')}>Tags</TableHead>
+                <TableHead className={cn(tableHeaderCellClasses, 'w-[160px] text-left')}>Status</TableHead>
+                <TableHead className={cn(tableHeaderCellClasses, stickyActionsColumnClasses, 'z-40 text-right')}>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody className="[&>tr]:border-b [&>tr:last-child]:border-0">
+              {currentRecords.length === 0 ? (
               <TableRow>
                 <TableCell
                   colSpan={6}
-                  className="col-span-full py-10 text-center text-sm text-muted-foreground"
+                  className="col-span-full px-5 py-10 text-center text-sm text-muted-foreground"
                 >
                   No accounts match your filters.
                 </TableCell>
@@ -196,7 +181,7 @@ export function WatchlistAccountsTable({
                     )}
                     onClick={() => onSelectAccount(account.id)}
                   >
-                    <TableCell className="align-top py-4">
+                    <TableCell className="min-w-[320px] align-top px-5 py-4">
                       <div className="flex items-center gap-3">
                         <Avatar className="size-11">
                           <AvatarImage src={account.avatarUrl} alt={account.displayName} />
@@ -222,7 +207,7 @@ export function WatchlistAccountsTable({
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="align-top py-4">
+                    <TableCell className="min-w-[200px] align-top px-5 py-4">
                       <div className="flex flex-col gap-1">
                         <span className="text-sm font-medium leading-tight">{account.category}</span>
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -231,13 +216,13 @@ export function WatchlistAccountsTable({
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="align-top py-4">
+                    <TableCell className="min-w-[220px] align-top px-5 py-4">
                       <div className="flex flex-col gap-1">
                         <span className="text-sm font-medium leading-tight">{formatDateTime(account.lastCrawledAt)}</span>
                         <span className="text-xs text-muted-foreground">{account.crawlFrequency} crawl</span>
                       </div>
                     </TableCell>
-                    <TableCell className="min-w-[280px] align-top py-4">
+                    <TableCell className="min-w-[320px] align-top px-5 py-4">
                       <div className="flex flex-wrap gap-1.5">
                         {account.tags.map((tag) => (
                           <Badge key={tag} variant="outline" className="text-xs font-medium">
@@ -246,7 +231,7 @@ export function WatchlistAccountsTable({
                         ))}
                       </div>
                     </TableCell>
-                    <TableCell className="align-top py-4">
+                    <TableCell className="min-w-[160px] align-top px-5 py-4">
                       <div className="flex flex-col gap-1">
                         <Badge
                           variant={account.status === 'monitoring' ? 'success' : 'secondary'}
@@ -264,7 +249,7 @@ export function WatchlistAccountsTable({
                     <TableCell
                       className={cn(
                         stickyActionsColumnClasses,
-                        'z-30 align-top py-4 transition-colors group-hover:bg-muted/40 group-data-[state=selected]:bg-primary/5',
+                        'z-30 align-top px-5 py-4 transition-colors group-hover:bg-muted/40 group-data-[state=selected]:bg-primary/5',
                       )}
                     >
                       <DropdownMenu>
@@ -296,6 +281,8 @@ export function WatchlistAccountsTable({
               )}
             </TableBody>
           </Table>
+          <ScrollBar orientation="horizontal" />
+        </ScrollArea>
       </CardTable>
       <CardContent className="border-t pt-4">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
