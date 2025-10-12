@@ -28,6 +28,7 @@ import { MediaViewerDialog } from './media-viewer-dialog';
 import { cn } from '@/lib/utils';
 import {
   stickyActionsColumnBaseClasses,
+  stickyActionsColumnWidthClasses,
   tableBodyClassName,
   tableClassName,
   tableHeaderCellClasses,
@@ -156,7 +157,8 @@ export function PublishedHistoryPanel({ tasks, posts, myAccounts, onOpenEditor }
                   className={cn(
                     tableHeaderCellClasses,
                     stickyActionsColumnBaseClasses,
-                    'z-40 w-[124px] min-w-[124px] max-w-[124px] text-right',
+                    stickyActionsColumnWidthClasses,
+                    'z-40 text-right',
                   )}
                 >
                   Actions
@@ -236,7 +238,8 @@ export function PublishedHistoryPanel({ tasks, posts, myAccounts, onOpenEditor }
                       <TableCell
                         className={cn(
                           stickyActionsColumnBaseClasses,
-                          'z-40 w-[124px] min-w-[124px] max-w-[124px] align-top px-5 py-4 transition-colors group-hover:bg-muted/40',
+                          stickyActionsColumnWidthClasses,
+                          'z-40 align-top py-4 transition-colors group-hover:bg-muted/40',
                         )}
                       >
                         <DropdownMenu>

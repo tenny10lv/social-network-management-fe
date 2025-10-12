@@ -26,6 +26,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { cn } from '@/lib/utils';
 import {
   stickyActionsColumnBaseClasses,
+  stickyActionsColumnWidthClasses,
   tableBodyClassName,
   tableClassName,
   tableHeaderCellClasses,
@@ -39,10 +40,7 @@ const PAGE_SIZE_OPTIONS = [5, 10, 20];
 const formatDateTime = (value: string) =>
   format(new Date(value), 'MMM d, yyyy • HH:mm');
 
-const stickyActionsColumnClasses = cn(
-  stickyActionsColumnBaseClasses,
-  'w-[124px] min-w-[124px] max-w-[124px]',
-);
+const stickyActionsColumnClasses = cn(stickyActionsColumnBaseClasses, stickyActionsColumnWidthClasses);
 
 interface WatchlistAccountsTableProps {
   accounts: WatchlistAccount[];
@@ -160,7 +158,9 @@ export function WatchlistAccountsTable({
                 <TableHead className={cn(tableHeaderCellClasses, 'min-w-[220px] text-left')}>Last Crawled</TableHead>
                 <TableHead className={cn(tableHeaderCellClasses, 'min-w-[320px] text-left')}>Tags</TableHead>
                 <TableHead className={cn(tableHeaderCellClasses, 'w-[160px] text-left')}>Status</TableHead>
-                <TableHead className={cn(tableHeaderCellClasses, stickyActionsColumnClasses, 'z-40 text-right')}>Actions</TableHead>
+                <TableHead className={cn(tableHeaderCellClasses, stickyActionsColumnClasses, 'z-40 text-right')}>
+                  Actions
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody className={tableBodyClassName}>
@@ -252,7 +252,7 @@ export function WatchlistAccountsTable({
                     <TableCell
                       className={cn(
                         stickyActionsColumnClasses,
-                        'z-30 align-top px-5 py-4 transition-colors group-hover:bg-muted/40 group-data-[state=selected]:bg-primary/5',
+                        'z-30 align-top py-4 transition-colors group-hover:bg-muted/40 group-data-[state=selected]:bg-primary/5',
                       )}
                     >
                       <DropdownMenu>

@@ -28,6 +28,7 @@ import { MediaViewerDialog } from './media-viewer-dialog';
 import { cn } from '@/lib/utils';
 import {
   stickyActionsColumnBaseClasses,
+  stickyActionsColumnWidthClasses,
   tableBodyClassName,
   tableClassName,
   tableHeaderCellClasses,
@@ -37,7 +38,7 @@ import {
 
 const PAGE_SIZE_OPTIONS = [5, 10, 20];
 
-const stickyActionsColumnClasses = cn(stickyActionsColumnBaseClasses, 'min-w-[116px] max-w-[116px] w-[116px]');
+const stickyActionsColumnClasses = cn(stickyActionsColumnBaseClasses, stickyActionsColumnWidthClasses);
 
 interface CrawledPostsPanelProps {
   account?: WatchlistAccount | null;
@@ -295,30 +296,30 @@ export function CrawledPostsPanel({ account, posts, onOpenEditor, onOpenSchedule
                       <TableCell
                         className={cn(
                           stickyActionsColumnClasses,
-                          'z-40 align-top px-5 py-4 transition-colors group-hover:bg-muted/40',
+                          'z-40 align-top py-4 transition-colors group-hover:bg-muted/40',
                         )}
                       >
                         <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="size-8">
-                            <EllipsisVertical className="size-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48">
-                          <DropdownMenuItem onClick={() => onOpenEditor(post.id, 'edit')}>
-                            <Pencil className="mr-2 size-4" />
-                            Edit post
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => onOpenEditor(post.id, 'publish')}>
-                            <Send className="mr-2 size-4" />
-                            Publish now
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => onOpenSchedule(post.id)}>
-                            <Timer className="mr-2 size-4" />
-                            Schedule post
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="size-8">
+                              <EllipsisVertical className="size-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-48">
+                            <DropdownMenuItem onClick={() => onOpenEditor(post.id, 'edit')}>
+                              <Pencil className="mr-2 size-4" />
+                              Edit post
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => onOpenEditor(post.id, 'publish')}>
+                              <Send className="mr-2 size-4" />
+                              Publish now
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => onOpenSchedule(post.id)}>
+                              <Timer className="mr-2 size-4" />
+                              Schedule post
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </TableCell>
                     </TableRow>
                   );
