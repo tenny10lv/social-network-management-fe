@@ -63,9 +63,12 @@ function DataGridTableBase({ children }: { children: ReactNode }) {
 function DataGridTableHead({ children }: { children: ReactNode }) {
   const { props } = useDataGrid();
 
+  const shouldShowHeaderBorder = props.tableLayout?.headerBorder !== false;
+
   return (
     <thead
       className={cn(
+        shouldShowHeaderBorder && '[&_tr]:border-b [&_tr]:border-border/70',
         props.tableClassNames?.header,
         props.tableLayout?.headerSticky && props.tableClassNames?.headerSticky,
       )}
@@ -84,12 +87,14 @@ function DataGridTableHeadRow<TData>({
 }) {
   const { props } = useDataGrid();
 
+  const shouldShowHeaderBorder = props.tableLayout?.headerBorder !== false;
+
   return (
     <tr
       key={headerGroup.id}
       className={cn(
         'bg-muted/40',
-        props.tableLayout?.headerBorder && '[&>th]:border-b',
+        shouldShowHeaderBorder && 'border-b border-border/70 [&>th]:border-b [&>th]:border-border/70',
         props.tableLayout?.cellBorder && '[&_>:last-child]:border-e-0',
         props.tableLayout?.stripped && 'bg-transparent',
         props.tableLayout?.headerBackground === false && 'bg-transparent',
