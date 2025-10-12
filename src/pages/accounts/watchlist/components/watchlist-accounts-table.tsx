@@ -25,7 +25,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { WatchlistAccount } from '../types';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 const PAGE_SIZE_OPTIONS = [5, 10, 20];
 
@@ -33,7 +32,7 @@ const formatDateTime = (value: string) =>
   format(new Date(value), 'MMM d, yyyy • HH:mm');
 
 const stickyActionsColumnClasses =
-  'sticky right-0 min-w-[124px] max-w-[124px] bg-background text-right shadow-[inset_1px_0_0_theme(colors.border)] supports-[backdrop-filter]:bg-background/90 backdrop-blur';
+  'sticky right-0 w-[124px] min-w-[124px] max-w-[124px] bg-background text-right shadow-[inset_1px_0_0_theme(colors.border)] supports-[backdrop-filter]:bg-background/90 backdrop-blur';
 
 const tableHeaderCellClasses =
   'px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground align-middle';
@@ -146,8 +145,10 @@ export function WatchlistAccountsTable({
         </CardToolbar>
       </CardHeader>
       <CardTable className="overflow-hidden">
-        <ScrollArea className="max-h-[480px]" viewportClassName="max-h-[480px]">
-          <Table className="min-w-full border-separate border-spacing-0">
+        <Table
+          className="min-w-full border-separate border-spacing-0"
+          wrapperClassName="max-h-[480px] overflow-x-auto overflow-y-auto"
+        >
             <TableHeader
               className="sticky top-0 z-30 [&>tr]:border-b [&>tr]:border-border/80 [&>tr]:bg-background [&>tr>th]:sticky [&>tr>th]:top-0 [&>tr>th]:z-30 [&>tr>th]:bg-background [&>tr>th]:supports-[backdrop-filter]:bg-background/95 [&>tr>th]:backdrop-blur"
             >
@@ -280,9 +281,7 @@ export function WatchlistAccountsTable({
                 ))
               )}
             </TableBody>
-          </Table>
-          <ScrollBar orientation="horizontal" />
-        </ScrollArea>
+        </Table>
       </CardTable>
       <CardContent className="border-t pt-4">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
