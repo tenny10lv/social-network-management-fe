@@ -19,18 +19,33 @@ function Table({ className, wrapperClassName, ...props }: TableProps) {
 }
 
 function TableHeader({ className, ...props }: React.HTMLAttributes<HTMLTableSectionElement>) {
-  return <thead data-slot="table-header" className={cn('[&_tr]:border-b', className)} {...props} />;
+  return (
+    <thead
+      data-slot="table-header"
+      className={cn('[&_tr]:border-b [&_tr]:border-border/70', className)}
+      {...props}
+    />
+  );
 }
 
 function TableBody({ className, ...props }: React.HTMLAttributes<HTMLTableSectionElement>) {
-  return <tbody data-slot="table-body" className={cn('[&_tr:last-child]:border-0', className)} {...props} />;
+  return (
+    <tbody
+      data-slot="table-body"
+      className={cn(
+        '[&_tr:last-child]:border-0 [&_tr>td]:border-b [&_tr>td]:border-border/70 [&_tr:last-child>td]:border-b-0',
+        className,
+      )}
+      {...props}
+    />
+  );
 }
 
 function TableFooter({ className, ...props }: React.HTMLAttributes<HTMLTableSectionElement>) {
   return (
     <tfoot
       data-slot="table-footer"
-      className={cn('border-t bg-muted/50 font-medium last:[&>tr]:border-b-0', className)}
+      className={cn('border-t border-border/70 bg-muted/50 font-medium last:[&>tr]:border-b-0', className)}
       {...props}
     />
   );
@@ -41,7 +56,7 @@ function TableRow({ className, ...props }: React.HTMLAttributes<HTMLTableRowElem
     <tr
       data-slot="table-row"
       className={cn(
-        'border-b border-border/70 transition-colors [&:has(td):hover]:bg-muted/50 data-[state=selected]:bg-muted',
+        'transition-colors [&:has(td):hover]:bg-muted/50 data-[state=selected]:bg-muted',
         className,
       )}
       {...props}
