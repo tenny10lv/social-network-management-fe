@@ -85,6 +85,7 @@ export const MENU_SIDEBAR: MenuConfig = [
     children: [
       { title: 'Threads Accounts', path: '/accounts' },
       { title: 'Watchlist', path: '/accounts/watchlist' },
+      { title: 'Categories', path: '/categories' },
       { title: 'Team Members', path: '/account/members/team-members' },
       { title: 'Roles & Permissions', path: '/account/members/roles' },
       { title: 'Invite Members', path: '/account/members/import-members' },
