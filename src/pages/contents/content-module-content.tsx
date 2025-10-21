@@ -2,15 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import {
-  AlertCircle,
-  EllipsisVertical,
-  LoaderCircle,
-  Pencil,
-  RefreshCcw,
-  Server,
-  Trash2,
-} from 'lucide-react';
+import { EllipsisVertical, LoaderCircle, Pencil, RefreshCcw, Server, Trash2 } from 'lucide-react';
 import { RiCheckboxCircleFill } from '@remixicon/react';
 import { toast } from 'sonner';
 import { Alert, AlertIcon, AlertTitle } from '@/components/ui/alert';

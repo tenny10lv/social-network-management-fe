@@ -62,6 +62,7 @@ import { BrowserContextsModulePage } from '@/pages/browser-contexts';
 import { AccountModulePage, WatchlistModulePage } from '@/pages/accounts';
 import { ContentModulePage } from '@/pages/contents';
 import { PublishingModulePage } from '@/pages/publishing';
+import { CategoryDetailPage, CategoryFormPage, CategoryListPage } from '@/modules/category';
 import {
   CampaignsCardPage,
   CampaignsListPage,
@@ -339,6 +340,10 @@ export function AppRoutingSetup() {
           />
           <Route path="/accounts" element={<AccountModulePage />} />
           <Route path="/accounts/watchlist" element={<WatchlistModulePage />} />
+          <Route path="/categories" element={<CategoryListPage />} />
+          <Route path="/categories/new" element={<CategoryFormPage />} />
+          <Route path="/categories/:categoryId/edit" element={<CategoryFormPage />} />
+          <Route path="/categories/:categoryId" element={<CategoryDetailPage />} />
           <Route path="/contents" element={<ContentModulePage />} />
           <Route path="/browser-contexts" element={<BrowserContextsModulePage />} />
           <Route path="/publishing" element={<PublishingModulePage />} />
