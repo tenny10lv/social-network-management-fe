@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { format } from 'date-fns';
-import { EllipsisVertical, Filter, RefreshCw, Search, Tag, Users, X } from 'lucide-react';
+import { EllipsisVertical, Filter, RefreshCw, Search, Tag, Users, X, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -49,6 +49,7 @@ interface WatchlistAccountsTableProps {
   onRequestEditTags: (account: WatchlistAccount) => void;
   onRequestRemove: (account: WatchlistAccount) => void;
   onTriggerCrawl: (accountId: string) => void;
+  onRequestAddAccount: () => void;
 }
 
 export function WatchlistAccountsTable({
@@ -58,6 +59,7 @@ export function WatchlistAccountsTable({
   onRequestEditTags,
   onRequestRemove,
   onTriggerCrawl,
+  onRequestAddAccount,
 }: WatchlistAccountsTableProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [platformFilter, setPlatformFilter] = useState<'all' | WatchlistAccount['platform']>('all');
@@ -146,6 +148,16 @@ export function WatchlistAccountsTable({
                 </SelectContent>
               </Select>
             </div>
+            <Button
+              type="button"
+              variant="primary"
+              size="md"
+              className="w-full sm:w-auto"
+              onClick={onRequestAddAccount}
+            >
+              <Plus className="size-3.5" />
+              Add Watchlist Account
+            </Button>
           </div>
         </CardToolbar>
       </CardHeader>

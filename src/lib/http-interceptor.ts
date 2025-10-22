@@ -190,13 +190,11 @@ export function initializeHttpInterceptors() {
     }
 
     if (response.status !== 200 && response.status !== 201) {
-        try {
+      try {
         const clone = response.clone();
-        const payload = await clone.json();
-
-    
+        await clone.json();
       } catch (error) {
-        console.error('Failed to handle validation error response', error);
+        console.error('Failed to parse error response', error);
       }
     }
 
