@@ -92,8 +92,20 @@ export function WatchlistAccountsTable({
   return (
     <Card>
       <CardHeader className="py-5">
-        <CardHeading>
-          <CardTitle>Watchlist Accounts</CardTitle>
+        <CardHeading className="w-full space-y-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <CardTitle>Watchlist Accounts</CardTitle>
+            <Button
+              type="button"
+              variant="primary"
+              size="md"
+              className="w-full sm:w-auto"
+              onClick={onRequestAddAccount}
+            >
+              <Plus className="size-3.5" />
+              Add Watchlist Account
+            </Button>
+          </div>
           <p className="text-sm text-muted-foreground">
             Monitor competitor activity and trigger new crawls when major updates drop.
           </p>
@@ -148,16 +160,6 @@ export function WatchlistAccountsTable({
                 </SelectContent>
               </Select>
             </div>
-            <Button
-              type="button"
-              variant="primary"
-              size="md"
-              className="w-full sm:w-auto"
-              onClick={onRequestAddAccount}
-            >
-              <Plus className="size-3.5" />
-              Add Watchlist Account
-            </Button>
           </div>
         </CardToolbar>
       </CardHeader>

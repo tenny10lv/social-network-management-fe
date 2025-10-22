@@ -1,0 +1,15 @@
+VITE_APP_NAME=social-network-management
+VITE_APP_VERSION=0.0.1
+
+## Supabase Configuration
+## Replace with your Supabase project URL and anon key
+VITE_SUPABASE_URL=http://localhost:5174/
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+VITE_SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+
+
+# VITE_API_URL=http://154.26.132.243:3000
+VITE_API_URL=http://localhost:4000
+
+VITE_API_PREFIX=api
+VITE_API_VERSION=v1

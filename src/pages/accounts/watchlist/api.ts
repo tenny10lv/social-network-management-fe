@@ -1,7 +1,7 @@
 import { buildApiUrl } from '@/lib/api';
 
 const WATCHLIST_ACCOUNTS_ENDPOINT = 'threads/watchlist/accounts';
-const THREAD_CATEGORIES_ENDPOINT = 'threads/categories';
+const THREAD_CATEGORIES_ENDPOINT = 'categories';
 
 const DEFAULT_ERROR_MESSAGE = 'Failed to add watchlist account. Please try again.';
 const DEFAULT_CATEGORY_ERROR_MESSAGE = 'Failed to load categories. Please try again.';

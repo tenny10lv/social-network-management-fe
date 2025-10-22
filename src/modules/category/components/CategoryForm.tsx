@@ -24,6 +24,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
+const NO_PARENT_VALUE = '__no_parent__';
+
 export interface CategoryParentOption {
   value: string;
   label: string;
@@ -112,8 +114,8 @@ export function CategoryForm({
               <FormItem>
                 <FormLabel>Parent category</FormLabel>
                 <Select
-                  value={field.value ?? ''}
-                  onValueChange={(value) => field.onChange(value === '' ? null : value)}
+                  value={field.value ?? NO_PARENT_VALUE}
+                  onValueChange={(value) => field.onChange(value === NO_PARENT_VALUE ? null : value)}
                   disabled={isParentLoading}
                 >
                   <FormControl>
@@ -122,7 +124,7 @@ export function CategoryForm({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="">No parent</SelectItem>
+                    <SelectItem value={NO_PARENT_VALUE}>No parent</SelectItem>
                     {parentOptions.map((option) => (
                       <SelectItem key={option.value} value={option.value} disabled={option.disabled}>
                         {option.label}
