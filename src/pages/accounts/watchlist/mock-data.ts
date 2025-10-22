@@ -1,4 +1,30 @@
-import { CrawledPost, MyThreadsAccount, PublishingTask, WatchlistAccount } from './types';
+import {
+  CrawledPost,
+  MyThreadsAccount,
+  PublishingTask,
+  WatchlistAccount,
+  EngagementPoint,
+  PostFrequencyPoint,
+  TrendPoint,
+} from './types';
+
+const buildFollowerTrend = (base: number): TrendPoint[] => [
+  { date: '2024-12-28', value: base },
+  { date: '2025-01-02', value: base + Math.round(base * 0.02) },
+  { date: '2025-01-05', value: base + Math.round(base * 0.035) },
+];
+
+const buildEngagementTrend = (base: number): EngagementPoint[] => [
+  { date: '2024-12-28', engagementRate: base },
+  { date: '2025-01-02', engagementRate: base + 0.3 },
+  { date: '2025-01-05', engagementRate: base + 0.6 },
+];
+
+const buildFrequencyTrend = (): PostFrequencyPoint[] => [
+  { date: '2024-12-28', posts: 2 },
+  { date: '2024-12-31', posts: 3 },
+  { date: '2025-01-05', posts: 4 },
+];
 
 export const MY_THREADS_ACCOUNTS: MyThreadsAccount[] = [
   {
@@ -38,6 +64,7 @@ export const WATCHLIST_ACCOUNTS: WatchlistAccount[] = [
   {
     id: 'wl-1',
     handle: '@urbanthreads',
+    username: 'urbanthreads',
     displayName: 'Urban Threads',
     platform: 'Threads',
     category: 'Fashion & Lifestyle',
@@ -49,10 +76,25 @@ export const WATCHLIST_ACCOUNTS: WatchlistAccount[] = [
     riskLevel: 'medium',
     status: 'monitoring',
     avatarUrl: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=96&q=80',
+    followerCount: 58400,
+    followerGrowth: buildFollowerTrend(56000),
+    engagementRateTrend: buildEngagementTrend(4.2),
+    postFrequencyTrend: buildFrequencyTrend(),
+    avgEngagementRate: 4.8,
+    note: 'Focus on limited drops and members-only launches.',
+    watcher: { id: 'team-1', name: 'Avery Chen' },
+    alerts: {
+      notifyOnNewPost: true,
+      notifyOnFollowerSpike: true,
+      notifyOnEngagementDrop: false,
+    },
+    lastCrawlStatus: 'success',
+    lastCrawlMessage: 'Crawl completed 1 hour ago.',
   },
   {
     id: 'wl-2',
     handle: '@nightlynews',
+    username: 'nightlynews',
     displayName: 'Nightly Newsroom',
     platform: 'Threads',
     category: 'Media & Publishing',
@@ -64,10 +106,25 @@ export const WATCHLIST_ACCOUNTS: WatchlistAccount[] = [
     riskLevel: 'low',
     status: 'monitoring',
     avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=96&q=80',
+    followerCount: 91200,
+    followerGrowth: buildFollowerTrend(89000),
+    engagementRateTrend: buildEngagementTrend(3.1),
+    postFrequencyTrend: buildFrequencyTrend(),
+    avgEngagementRate: 3.4,
+    note: 'Monitor for late-night breaking updates.',
+    watcher: { id: 'team-2', name: 'Jonah Patel' },
+    alerts: {
+      notifyOnNewPost: true,
+      notifyOnFollowerSpike: false,
+      notifyOnEngagementDrop: false,
+    },
+    lastCrawlStatus: 'scheduled',
+    lastCrawlMessage: 'Next crawl queued for 15 minutes from now.',
   },
   {
     id: 'wl-3',
     handle: '@studioflux',
+    username: 'studioflux',
     displayName: 'Studio Flux',
     platform: 'Instagram',
     category: 'Creative Agencies',
@@ -79,10 +136,25 @@ export const WATCHLIST_ACCOUNTS: WatchlistAccount[] = [
     riskLevel: 'high',
     status: 'monitoring',
     avatarUrl: 'https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=96&q=80',
+    followerCount: 48200,
+    followerGrowth: buildFollowerTrend(46000),
+    engagementRateTrend: buildEngagementTrend(5.1),
+    postFrequencyTrend: buildFrequencyTrend(),
+    avgEngagementRate: 5.6,
+    note: 'Creative shop with high production value reels.',
+    watcher: { id: 'team-3', name: 'Leah Ortiz' },
+    alerts: {
+      notifyOnNewPost: true,
+      notifyOnFollowerSpike: true,
+      notifyOnEngagementDrop: true,
+    },
+    lastCrawlStatus: 'success',
+    lastCrawlMessage: 'Last crawl surfaced 3 new videos.',
   },
   {
     id: 'wl-4',
     handle: '@socialnorth',
+    username: 'socialnorth',
     displayName: 'Social North',
     platform: 'Threads',
     category: 'Media & Publishing',
@@ -94,10 +166,25 @@ export const WATCHLIST_ACCOUNTS: WatchlistAccount[] = [
     riskLevel: 'medium',
     status: 'monitoring',
     avatarUrl: 'https://images.unsplash.com/photo-1545239351-1141bd82e8a6?auto=format&fit=crop&w=96&q=80',
+    followerCount: 37800,
+    followerGrowth: buildFollowerTrend(36000),
+    engagementRateTrend: buildEngagementTrend(2.8),
+    postFrequencyTrend: buildFrequencyTrend(),
+    avgEngagementRate: 2.5,
+    note: 'Community account seeing sentiment swings.',
+    watcher: null,
+    alerts: {
+      notifyOnNewPost: false,
+      notifyOnFollowerSpike: true,
+      notifyOnEngagementDrop: true,
+    },
+    lastCrawlStatus: 'failed',
+    lastCrawlMessage: 'Authentication error during previous crawl.',
   },
   {
     id: 'wl-5',
     handle: '@creatorlab',
+    username: 'creatorlab',
     displayName: 'Creator Lab',
     platform: 'TikTok',
     category: 'Creators & Influencers',
@@ -109,6 +196,20 @@ export const WATCHLIST_ACCOUNTS: WatchlistAccount[] = [
     riskLevel: 'low',
     status: 'paused',
     avatarUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=96&q=80',
+    followerCount: 74200,
+    followerGrowth: buildFollowerTrend(72000),
+    engagementRateTrend: buildEngagementTrend(6.2),
+    postFrequencyTrend: buildFrequencyTrend(),
+    avgEngagementRate: 6.5,
+    note: 'Paused while evaluating collab potential.',
+    watcher: { id: 'team-4', name: 'Mira Davenport' },
+    alerts: {
+      notifyOnNewPost: false,
+      notifyOnFollowerSpike: false,
+      notifyOnEngagementDrop: false,
+    },
+    lastCrawlStatus: 'running',
+    lastCrawlMessage: 'Manual sync kicked off 5 minutes ago.',
   },
 ];
 
