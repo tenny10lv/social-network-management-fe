@@ -32,11 +32,33 @@ import { PublishedHistoryPanel } from './components/published-history-panel';
 import { PostEditorDialog } from './components/post-editor-dialog';
 import { SchedulePostDialog } from './components/schedule-post-dialog';
 import { WatchlistTagsDialog } from './components/watchlist-tags-dialog';
+import { AddWatchlistAccountDialog } from './components/add-watchlist-account-dialog';
 
 const createId = () =>
   typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
     ? crypto.randomUUID()
     : Math.random().toString(36).slice(2, 11);
+
+const sanitizeUsername = (value: string) => value.trim().replace(/^@+/, '');
+
+const buildHandleFromUsername = (value: string) => {
+  const sanitized = sanitizeUsername(value);
+  return sanitized ? `@${sanitized}` : '';
+};
+
+const buildDisplayNameFromUsername = (value: string) => {
+  const sanitized = sanitizeUsername(value);
+
+  if (!sanitized) {
+    return 'New Watchlist Account';
+  }
+
+  return sanitized
+    .split(/[-_.\s]+/)
+    .filter(Boolean)
+    .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+    .join(' ');
+};
 
 export function WatchlistModuleContent() {
   const [watchlistAccounts, setWatchlistAccounts] = useState<WatchlistAccount[]>(WATCHLIST_ACCOUNTS);
@@ -49,6 +71,7 @@ export function WatchlistModuleContent() {
   const [editorState, setEditorState] = useState<{ postId: string; intent: 'edit' | 'publish' } | null>(null);
   const [scheduleState, setScheduleState] = useState<{ postId: string; taskId?: string } | null>(null);
   const [accountPendingRemoval, setAccountPendingRemoval] = useState<WatchlistAccount | null>(null);
+  const [isAddAccountDialogOpen, setAddAccountDialogOpen] = useState(false);
 
   const selectedAccount = useMemo(
     () => watchlistAccounts.find((account) => account.id === selectedAccountId) ?? null,
@@ -97,6 +120,41 @@ export function WatchlistModuleContent() {
   const handleSelectAccount = useCallback((accountId: string) => {
     setSelectedAccountId(accountId);
   }, []);
+
+  const handleRequestAddAccount = useCallback(() => {
+    setAddAccountDialogOpen(true);
+  }, [setAddAccountDialogOpen]);
+
+  const handleAccountCreated = useCallback(
+    ({ username }: { username: string; response: unknown }) => {
+      const sanitizedUsername = sanitizeUsername(username);
+
+      if (!sanitizedUsername) {
+        return;
+      }
+
+      const now = new Date().toISOString();
+      const newAccount: WatchlistAccount = {
+        id: createId(),
+        handle: buildHandleFromUsername(sanitizedUsername),
+        displayName: buildDisplayNameFromUsername(sanitizedUsername),
+        platform: 'Threads',
+        category: 'Uncategorized',
+        tags: [],
+        monitoringSince: now,
+        lastCrawledAt: now,
+        crawlFrequency: 'Daily',
+        sentimentTrend: 'neutral',
+        riskLevel: 'medium',
+        status: 'monitoring',
+        avatarUrl: '',
+      };
+
+      setWatchlistAccounts((previous) => [newAccount, ...previous]);
+      setSelectedAccountId(newAccount.id);
+    },
+    [setWatchlistAccounts, setSelectedAccountId],
+  );
 
   const handleUpdateTags = useCallback((accountId: string, tags: string[]) => {
     setWatchlistAccounts((previous) =>
@@ -380,6 +438,7 @@ export function WatchlistModuleContent() {
           onRequestEditTags={setTagEditorAccount}
           onRequestRemove={setAccountPendingRemoval}
           onTriggerCrawl={handleTriggerCrawl}
+          onRequestAddAccount={handleRequestAddAccount}
         />
       </div>
       <div className="flex flex-col gap-6 xl:col-span-1">
@@ -430,6 +489,12 @@ export function WatchlistModuleContent() {
           onToggleStatus={handleToggleMyAccountStatus}
         />
       </div>
+
+      <AddWatchlistAccountDialog
+        open={isAddAccountDialogOpen}
+        onOpenChange={setAddAccountDialogOpen}
+        onSuccess={handleAccountCreated}
+      />
 
       <WatchlistTagsDialog
         open={!!tagEditorAccount}
