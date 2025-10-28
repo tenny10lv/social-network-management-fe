@@ -47,12 +47,12 @@ import {
 } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
-  AccountRecord,
-  deleteAccount,
-  getAccounts,
-  loginAccount,
+  ThreadsAccountRecord,
+  deleteThreadsAccount,
+  getThreadsAccounts,
+  loginThreadsAccount,
 } from './api';
-import { AccountFormDialog } from './components/account-form-dialog';
+import { ThreadsAccountFormDialog } from './components/threads-account-form-dialog';
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50];
 
@@ -76,7 +76,7 @@ const formatDate = (value?: string | null) => {
   }).format(date);
 };
 
-const getStatusBadge = (record: AccountRecord) => {
+const getStatusBadge = (record: ThreadsAccountRecord) => {
   const variant = record.isActive ? 'success' : 'secondary';
   const label = record.status || (record.isActive ? 'Active' : 'Inactive');
 
@@ -87,7 +87,7 @@ const getStatusBadge = (record: AccountRecord) => {
   );
 };
 
-export function AccountModuleContent() {
+export function ThreadsAccountsModuleContent() {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(PAGE_SIZE_OPTIONS[0]);
@@ -98,21 +98,21 @@ export function AccountModuleContent() {
   const [loginAccountId, setLoginAccountId] = useState<string | null>(null);
 
   const accountsQuery = useQuery({
-    queryKey: ['accounts', page, limit],
-    queryFn: () => getAccounts({ page, limit }),
+    queryKey: ['threadsAccounts', page, limit],
+    queryFn: () => getThreadsAccounts({ page, limit }),
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => deleteAccount(id),
+    mutationFn: (id: string) => deleteThreadsAccount(id),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['accounts'] });
+      void queryClient.invalidateQueries({ queryKey: ['threadsAccounts'] });
       toast.custom(
         (t) => (
           <Alert variant="mono" icon="success" onClose={() => toast.dismiss(t)}>
             <AlertIcon>
               <RiCheckboxCircleFill />
             </AlertIcon>
-            <AlertTitle>Account deleted successfully.</AlertTitle>
+            <AlertTitle>Threads account deleted successfully.</AlertTitle>
           </Alert>
         ),
         {
@@ -125,19 +125,19 @@ export function AccountModuleContent() {
   });
 
   const loginMutation = useMutation({
-    mutationFn: (id: string) => loginAccount(id),
+    mutationFn: (id: string) => loginThreadsAccount(id),
     onMutate: (id: string) => {
       setLoginAccountId(id);
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['accounts'] });
+      void queryClient.invalidateQueries({ queryKey: ['threadsAccounts'] });
       toast.custom(
         (t) => (
           <Alert variant="mono" icon="success" onClose={() => toast.dismiss(t)}>
             <AlertIcon>
               <RiCheckboxCircleFill />
             </AlertIcon>
-            <AlertTitle>Account login started successfully.</AlertTitle>
+            <AlertTitle>Threads account login started successfully.</AlertTitle>
           </Alert>
         ),
         {
@@ -226,24 +226,24 @@ export function AccountModuleContent() {
   const isLoading = accountsQuery.isLoading || accountsQuery.isFetching;
   const hasError = accountsQuery.isError;
   const error = accountsQuery.error as Error | null;
-  const records: AccountRecord[] = data?.data ?? [];
+  const records: ThreadsAccountRecord[] = data?.data ?? [];
 
   return (
     <>
       <Card>
         <CardHeader className="py-4">
           <CardHeading>
-            <CardTitle>Accounts</CardTitle>
+            <CardTitle>Threads Accounts</CardTitle>
             <span className="text-sm text-muted-foreground">
-              Manage connected social network accounts and credentials.
+              Manage connected Threads accounts and credentials.
             </span>
           </CardHeading>
           <CardToolbar>
-            <Button onClick={openCreateModal}>Create Account</Button>
+            <Button onClick={openCreateModal}>Create Threads Account</Button>
             <Button
               variant="outline"
               size="icon"
-              onClick={() => void queryClient.invalidateQueries({ queryKey: ['accounts'] })}
+              onClick={() => void queryClient.invalidateQueries({ queryKey: ['threadsAccounts'] })}
             >
               <RefreshCcw className="size-4" />
             </Button>
@@ -271,7 +271,7 @@ export function AccountModuleContent() {
                   <TableCell colSpan={8} className="py-12 text-center text-muted-foreground">
                     <div className="flex items-center justify-center gap-2 text-sm">
                       <LoaderCircle className="size-4 animate-spin" />
-                      Loading accounts...
+                      Loading Threads accounts...
                     </div>
                   </TableCell>
                 </TableRow>
@@ -282,14 +282,14 @@ export function AccountModuleContent() {
                       <AlertIcon>
                         <Server className="size-5" />
                       </AlertIcon>
-                      <AlertTitle>{error?.message ?? 'Failed to load accounts.'}</AlertTitle>
+                      <AlertTitle>{error?.message ?? 'Failed to load Threads accounts.'}</AlertTitle>
                     </Alert>
                   </TableCell>
                 </TableRow>
               ) : records.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={8} className="py-12 text-center text-muted-foreground">
-                    No accounts found.
+                    No Threads accounts found.
                   </TableCell>
                 </TableRow>
               ) : (
@@ -400,7 +400,7 @@ export function AccountModuleContent() {
         </CardFooter>
       </Card>
 
-      <AccountFormDialog
+      <ThreadsAccountFormDialog
         mode={formMode}
         accountId={selectedAccountId}
         open={isFormOpen}
@@ -415,9 +415,9 @@ export function AccountModuleContent() {
       <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete account</AlertDialogTitle>
+            <AlertDialogTitle>Delete Threads account</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this account? This action cannot be undone.
+              Are you sure you want to delete this Threads account? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

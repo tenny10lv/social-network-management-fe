@@ -8,7 +8,7 @@ import {
   UnauthorizedError,
 } from '@/lib/api';
 
-export const accountBaseSchema = z.object({
+export const threadsAccountBaseSchema = z.object({
   platform: z.string().min(1, 'Platform is required'),
   accountName: z.string().min(1, 'Account name is required'),
   username: z.string().min(1, 'Username is required'),
@@ -17,13 +17,13 @@ export const accountBaseSchema = z.object({
   isActive: z.boolean(),
 });
 
-export const accountCreateSchema = accountBaseSchema.extend({
+export const threadsAccountCreateSchema = threadsAccountBaseSchema.extend({
   password: z.string().min(1, 'Password is required'),
 });
 
-export type AccountFormValues = z.infer<typeof accountBaseSchema>;
+export type ThreadsAccountFormValues = z.infer<typeof threadsAccountBaseSchema>;
 
-export type AccountRecord = {
+export type ThreadsAccountRecord = {
   id: string;
   platform: string;
   accountName: string;
@@ -38,8 +38,8 @@ export type AccountRecord = {
   updatedAt?: string | null;
 };
 
-export type AccountListResponse = {
-  data: AccountRecord[];
+export type ThreadsAccountListResponse = {
+  data: ThreadsAccountRecord[];
   meta?: {
     total?: number;
     page?: number;
@@ -131,7 +131,7 @@ const normalizeStatus = (value: unknown) => {
   };
 };
 
-const normalizeAccountRecord = (record: any): AccountRecord => {
+const normalizeThreadsAccountRecord = (record: any): ThreadsAccountRecord => {
   const proxy = record?.proxy ?? record?.proxyInfo ?? record?.proxy_info ?? null;
   const proxyId =
     record?.proxyId ??
@@ -177,7 +177,7 @@ const normalizeListPayload = (
   payload: any,
   page: number,
   limit: number,
-): AccountListResponse => {
+): ThreadsAccountListResponse => {
   if (!payload) {
     return { data: [], meta: { page, limit, total: 0, totalPages: 0 } };
   }
@@ -193,7 +193,7 @@ const normalizeListPayload = (
   const meta = payload?.meta ?? payload?.pagination ?? {};
 
   return {
-    data: rawItems.map(normalizeAccountRecord),
+    data: rawItems.map(normalizeThreadsAccountRecord),
     meta: {
       total: typeof meta.total === 'number' ? meta.total : rawItems.length,
       page: typeof meta.page === 'number' ? meta.page : page,
@@ -208,34 +208,34 @@ const normalizeListPayload = (
   };
 };
 
-export async function getAccounts({
+export async function getThreadsAccounts({
   page,
   limit,
 }: {
   page: number;
   limit: number;
-}): Promise<AccountListResponse> {
+}): Promise<ThreadsAccountListResponse> {
   const params = new URLSearchParams({
     page: String(page),
     limit: String(limit),
   });
 
-  const response = await fetch(buildApiUrl(`accounts?${params.toString()}`));
+  const response = await fetch(buildApiUrl(`threads-accounts?${params.toString()}`));
   const payload = await handleResponse(response);
 
   return normalizeListPayload(payload, page, limit);
 }
 
-export async function getAccount(id: string): Promise<AccountRecord> {
-  const response = await fetch(buildApiUrl(`accounts/${id}`));
+export async function getThreadsAccount(id: string): Promise<ThreadsAccountRecord> {
+  const response = await fetch(buildApiUrl(`threads-accounts/${id}`));
   const payload = await handleResponse(response);
 
   const data = payload?.data ?? payload;
 
-  return normalizeAccountRecord(data);
+  return normalizeThreadsAccountRecord(data);
 }
 
-const mapFormValuesToPayload = (values: AccountFormValues) => {
+const mapThreadsAccountFormValuesToPayload = (values: ThreadsAccountFormValues) => {
   const payload: Record<string, unknown> = {
     platform: values.platform,
     accountName: values.accountName,
@@ -255,59 +255,59 @@ const mapFormValuesToPayload = (values: AccountFormValues) => {
   return payload;
 };
 
-export async function createAccount(data: AccountFormValues): Promise<AccountRecord> {
-  const response = await fetch(buildApiUrl('accounts'), {
+export async function createThreadsAccount(data: ThreadsAccountFormValues): Promise<ThreadsAccountRecord> {
+  const response = await fetch(buildApiUrl('threads-accounts'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(mapFormValuesToPayload(data)),
+    body: JSON.stringify(mapThreadsAccountFormValuesToPayload(data)),
   });
 
   const payload = await handleResponse(response);
   const record = payload?.data ?? payload;
 
-  return normalizeAccountRecord(record);
+  return normalizeThreadsAccountRecord(record);
 }
 
-export async function updateAccount({
+export async function updateThreadsAccount({
   id,
   data,
 }: {
   id: string;
-  data: AccountFormValues;
-}): Promise<AccountRecord> {
-  const response = await fetch(buildApiUrl(`accounts/${id}`), {
+  data: ThreadsAccountFormValues;
+}): Promise<ThreadsAccountRecord> {
+  const response = await fetch(buildApiUrl(`threads-accounts/${id}`), {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(mapFormValuesToPayload(data)),
+    body: JSON.stringify(mapThreadsAccountFormValuesToPayload(data)),
   });
 
   const payload = await handleResponse(response);
   const record = payload?.data ?? payload;
 
-  return normalizeAccountRecord(record);
+  return normalizeThreadsAccountRecord(record);
 }
 
-export async function deleteAccount(id: string): Promise<void> {
-  const response = await fetch(buildApiUrl(`accounts/${id}`), {
+export async function deleteThreadsAccount(id: string): Promise<void> {
+  const response = await fetch(buildApiUrl(`threads-accounts/${id}`), {
     method: 'DELETE',
   });
 
   await handleResponse(response);
 }
 
-export async function loginAccount(id: string): Promise<AccountRecord> {
-  const response = await fetch(buildApiUrl(`accounts/${id}/login`), {
+export async function loginThreadsAccount(id: string): Promise<ThreadsAccountRecord> {
+  const response = await fetch(buildApiUrl(`threads-accounts/${id}/login`), {
     method: 'POST',
   });
 
   const payload = await handleResponse(response);
   const record = payload?.data ?? payload;
 
-  return normalizeAccountRecord(record);
+  return normalizeThreadsAccountRecord(record);
 }
 
 export async function getProxyOptions(): Promise<ProxyOption[]> {

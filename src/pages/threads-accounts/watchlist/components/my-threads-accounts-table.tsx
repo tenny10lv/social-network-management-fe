@@ -85,7 +85,7 @@ export function MyThreadsAccountsTable({ accounts, onSetPrimary, onToggleStatus 
           <Input
             value={searchQuery}
             onChange={(event) => setSearchQuery(event.target.value)}
-            placeholder="Search my accounts"
+            placeholder="Search my Threads accounts"
             className="w-full xl:max-w-[220px]"
           />
           <div className="flex w-full items-center gap-2 xl:w-auto">
@@ -109,7 +109,7 @@ export function MyThreadsAccountsTable({ accounts, onSetPrimary, onToggleStatus 
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[72px]">Avatar</TableHead>
-                <TableHead>Account</TableHead>
+                <TableHead>Threads Account</TableHead>
                 <TableHead className="w-[180px]">Followers</TableHead>
                 <TableHead className="w-[280px]">Publishing Window</TableHead>
                 <TableHead className="w-[180px]">Last Activity</TableHead>
@@ -122,7 +122,7 @@ export function MyThreadsAccountsTable({ accounts, onSetPrimary, onToggleStatus 
               {currentRecords.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="py-8 text-center text-sm text-muted-foreground">
-                    No accounts available.
+                    No Threads accounts available.
                   </TableCell>
                 </TableRow>
               ) : (

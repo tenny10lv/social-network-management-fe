@@ -36,18 +36,18 @@ import {
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
-  AccountFormValues,
-  AccountRecord,
+  ThreadsAccountFormValues,
+  ThreadsAccountRecord,
   ProxyOption,
-  accountBaseSchema,
-  accountCreateSchema,
-  createAccount,
-  getAccount,
+  threadsAccountBaseSchema,
+  threadsAccountCreateSchema,
+  createThreadsAccount,
+  getThreadsAccount,
   getProxyOptions,
-  updateAccount,
+  updateThreadsAccount,
 } from '../api';
 
-interface AccountFormDialogProps {
+interface ThreadsAccountFormDialogProps {
   mode: 'create' | 'edit';
   accountId?: string | null;
   open: boolean;
@@ -61,7 +61,7 @@ const PLATFORM_OPTIONS = [
   { value: 'THREADS', label: 'Threads' },
 ];
 
-const DEFAULT_VALUES: AccountFormValues = {
+const DEFAULT_VALUES: ThreadsAccountFormValues = {
   platform: '',
   accountName: '',
   username: '',
@@ -105,19 +105,19 @@ const sanitizeProxyId = (value?: string | null) => {
 
 const NO_PROXY_OPTION_VALUE = '__no_proxy__';
 
-export function AccountFormDialog({
+export function ThreadsAccountFormDialog({
   mode,
   accountId,
   open,
   onOpenChange,
-}: AccountFormDialogProps) {
+}: ThreadsAccountFormDialogProps) {
   const queryClient = useQueryClient();
   const schema = useMemo(
-    () => (mode === 'create' ? accountCreateSchema : accountBaseSchema),
+    () => (mode === 'create' ? threadsAccountCreateSchema : threadsAccountBaseSchema),
     [mode],
   );
 
-  const form = useForm<AccountFormValues>({
+  const form = useForm<ThreadsAccountFormValues>({
     resolver: zodResolver(schema),
     defaultValues: DEFAULT_VALUES,
   });
@@ -129,9 +129,9 @@ export function AccountFormDialog({
     isLoading: isAccountLoading,
     isError: isAccountError,
     error: accountError,
-  } = useQuery<AccountRecord, Error>({
-    queryKey: ['account', accountId],
-    queryFn: () => getAccount(accountId as string),
+  } = useQuery<ThreadsAccountRecord, Error>({
+    queryKey: ['threadsAccount', accountId],
+    queryFn: () => getThreadsAccount(accountId as string),
     enabled: mode === 'edit' && !!accountId && open,
   });
 
@@ -184,16 +184,16 @@ export function AccountFormDialog({
   }, [account, proxiesQuery.data]);
 
   const createMutation = useMutation({
-    mutationFn: (values: AccountFormValues) => createAccount(values),
+    mutationFn: (values: ThreadsAccountFormValues) => createThreadsAccount(values),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['accounts'] });
+      void queryClient.invalidateQueries({ queryKey: ['threadsAccounts'] });
       toast.custom(
         (t) => (
           <Alert variant="mono" icon="success" onClose={() => toast.dismiss(t)}>
             <AlertIcon>
               <RiCheckboxCircleFill />
             </AlertIcon>
-            <AlertTitle>Account created successfully.</AlertTitle>
+            <AlertTitle>Threads account created successfully.</AlertTitle>
           </Alert>
         ),
         {
@@ -205,20 +205,20 @@ export function AccountFormDialog({
   });
 
   const updateMutation = useMutation({
-    mutationFn: (values: AccountFormValues) =>
-      updateAccount({
+    mutationFn: (values: ThreadsAccountFormValues) =>
+      updateThreadsAccount({
         id: accountId as string,
         data: values,
       }),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['accounts'] });
+      void queryClient.invalidateQueries({ queryKey: ['threadsAccounts'] });
       toast.custom(
         (t) => (
           <Alert variant="mono" icon="success" onClose={() => toast.dismiss(t)}>
             <AlertIcon>
               <RiCheckboxCircleFill />
             </AlertIcon>
-            <AlertTitle>Account updated successfully.</AlertTitle>
+            <AlertTitle>Threads account updated successfully.</AlertTitle>
           </Alert>
         ),
         {
@@ -232,15 +232,15 @@ export function AccountFormDialog({
   const mutation = mode === 'create' ? createMutation : updateMutation;
   const isSubmitting = mutation.isPending;
 
-  const onSubmit = (values: AccountFormValues) => {
+  const onSubmit = (values: ThreadsAccountFormValues) => {
     mutation.mutate({
       ...values,
       password: mode === 'edit' && !values.password ? undefined : values.password,
     });
   };
 
-  const title = mode === 'create' ? 'Create Account' : 'Update Account';
-  const submitLabel = mode === 'create' ? 'Create Account' : 'Update Account';
+  const title = mode === 'create' ? 'Create Threads Account' : 'Update Threads Account';
+  const submitLabel = mode === 'create' ? 'Create Threads Account' : 'Update Threads Account';
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -255,14 +255,14 @@ export function AccountFormDialog({
           {mode === 'edit' && isAccountLoading ? (
             <div className="flex items-center justify-center py-12 text-muted-foreground">
               <LoaderCircle className="size-5 animate-spin" />
-              <span className="ms-2 text-sm">Loading account details...</span>
+              <span className="ms-2 text-sm">Loading Threads account details...</span>
             </div>
           ) : mode === 'edit' && isAccountError ? (
             <Alert variant="mono" icon="destructive">
               <AlertIcon>
                 <AlertCircle className="size-5" />
               </AlertIcon>
-              <AlertTitle>{accountError?.message ?? 'Unable to load account details.'}</AlertTitle>
+              <AlertTitle>{accountError?.message ?? 'Unable to load Threads account details.'}</AlertTitle>
             </Alert>
           ) : (
             <Form {...form}>
@@ -299,9 +299,9 @@ export function AccountFormDialog({
                   name="accountName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Account Name</FormLabel>
+                      <FormLabel>Threads Account Name</FormLabel>
                       <FormControl>
-                        <Input placeholder="Marketing Account" autoComplete="off" {...field} />
+                        <Input placeholder="Marketing Threads Account" autoComplete="off" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -393,7 +393,7 @@ export function AccountFormDialog({
                       <div className="space-y-0.5">
                         <FormLabel className="text-sm">Active</FormLabel>
                         <p className="text-xs text-muted-foreground">
-                          Enable this account for automations and scheduled jobs.
+                          Enable this Threads account for automations and scheduled jobs.
                         </p>
                       </div>
                     </FormItem>

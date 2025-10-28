@@ -59,7 +59,7 @@ import {
   NetworkVisitorsPage,
 } from '@/pages/network';
 import { BrowserContextsModulePage } from '@/pages/browser-contexts';
-import { AccountModulePage, WatchlistModulePage } from '@/pages/accounts';
+import { ThreadsAccountsModulePage, WatchlistModulePage } from '@/pages/threads-accounts';
 import { ContentModulePage } from '@/pages/contents';
 import { PublishingModulePage } from '@/pages/publishing';
 import { CategoryDetailPage, CategoryFormPage, CategoryListPage } from '@/modules/category';
@@ -338,8 +338,8 @@ export function AppRoutingSetup() {
             path="/network/user-table/visitors"
             element={<NetworkVisitorsPage />}
           />
-          <Route path="/accounts" element={<AccountModulePage />} />
-          <Route path="/accounts/watchlist" element={<WatchlistModulePage />} />
+          <Route path="/threads-accounts" element={<ThreadsAccountsModulePage />} />
+          <Route path="/threads-accounts/watchlist" element={<WatchlistModulePage />} />
           <Route path="/categories" element={<CategoryListPage />} />
           <Route path="/categories/new" element={<CategoryFormPage />} />
           <Route path="/categories/:categoryId/edit" element={<CategoryFormPage />} />

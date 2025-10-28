@@ -7,9 +7,9 @@ import {
 } from '@/partials/common/toolbar';
 import { Container } from '@/components/common/container';
 import { useSettings } from '@/providers/settings-provider';
-import { AccountModuleContent } from './account-module-content';
+import { ThreadsAccountsModuleContent } from './threads-accounts-module-content';
 
-export function AccountModulePage() {
+export function ThreadsAccountsModulePage() {
   const { settings } = useSettings();
 
   return (
@@ -18,16 +18,16 @@ export function AccountModulePage() {
         <Container>
           <Toolbar>
             <ToolbarHeading>
-              <ToolbarPageTitle text="Accounts" />
+              <ToolbarPageTitle text="Threads Accounts" />
               <ToolbarDescription>
-                <span>Provision, update, and monitor your connected accounts.</span>
+                <span>Provision, update, and monitor your connected Threads accounts.</span>
               </ToolbarDescription>
             </ToolbarHeading>
           </Toolbar>
         </Container>
       )}
       <Container>
-        <AccountModuleContent />
+        <ThreadsAccountsModuleContent />
       </Container>
     </Fragment>
   );
