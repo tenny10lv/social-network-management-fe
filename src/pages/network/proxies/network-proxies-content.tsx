@@ -78,7 +78,7 @@ export function NetworkProxiesContent() {
   const [selectedProxyId, setSelectedProxyId] = useState<string | null>(null);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [pingingProxyId, setPingingProxyId] = useState<string | null>(null);
-  const [_, setLastPingIps] = useState<Record<string, string>>({});
+  const [, setLastPingIps] = useState<Record<string, string>>({});
 
   const proxiesQuery = useQuery({
     queryKey: ['proxies', page, limit],
@@ -293,7 +293,9 @@ export function NetworkProxiesContent() {
                 <TableHead>Status</TableHead>
                 <TableHead>Created</TableHead>
                 <TableHead>Updated</TableHead>
-                <TableHead className="sticky right-0 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/75">Actions</TableHead>
+                <TableHead>
+                  Actions
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -333,7 +335,7 @@ export function NetworkProxiesContent() {
                     <TableCell>{getStatusBadge(proxy.isActive)}</TableCell>
                     <TableCell>{formatDate(proxy.createdAt)}</TableCell>
                     <TableCell>{formatDate(proxy.updatedAt)}</TableCell>
-                    <TableCell className="sticky right-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/75">
+                    <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon" className="hover:bg-muted">
