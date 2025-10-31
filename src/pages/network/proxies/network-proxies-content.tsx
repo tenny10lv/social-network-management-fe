@@ -135,6 +135,33 @@ export function NetworkProxiesContent() {
     mutationFn: (id: string) => pingProxy(id),
     onSuccess: (result, proxyId) => {
       const ip = result?.ip;
+      const isSuccess = result?.success !== false;
+
+      if (!isSuccess) {
+        const errorMessage = result?.error || 'Proxy is not active.';
+
+        toast.custom(
+          (t) => (
+            <Alert variant="mono" icon="destructive" onClose={() => toast.dismiss(t)}>
+              <AlertIcon>
+                <AlertCircle className="size-5" />
+              </AlertIcon>
+              <AlertTitle>{`Proxy is not active: ${errorMessage}`}</AlertTitle>
+            </Alert>
+          ),
+          {
+            duration: 5000,
+          },
+        );
+
+        setLastPingIps((previous) => {
+          const rest = { ...previous };
+          delete rest[proxyId];
+          return rest;
+        });
+
+        return;
+      }
 
       toast.custom(
         (t) => (

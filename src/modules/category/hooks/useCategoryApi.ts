@@ -215,7 +215,7 @@ const normalizeListResponse = (
 
 const buildCategoryUrl = (path = '') => {
   const sanitizedPath = path.replace(/^\/+/, '');
-  return buildApiUrl(sanitizedPath ? `category/${sanitizedPath}` : 'category');
+  return buildApiUrl(sanitizedPath ? `categories/${sanitizedPath}` : 'categories');
 };
 
 const buildQueryString = (params: CategoryListQuery) => {

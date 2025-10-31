@@ -39,6 +39,8 @@ export type ProxyRecord = {
 
 export type ProxyPingResult = {
   ip?: string;
+  success?: boolean;
+  error?: string | null;
 };
 
 export type ProxyListResponse = {
@@ -241,6 +243,17 @@ export async function pingProxy(id: string): Promise<ProxyPingResult> {
 
   const data = payload?.data ?? payload;
   const ip = extractIpAddress(data) ?? extractIpAddress(payload);
+  const success = typeof data?.success === 'boolean' ? data.success : payload?.success;
+  const errorMessage =
+    typeof data?.error === 'string'
+      ? data.error
+      : typeof payload?.error === 'string'
+        ? payload.error
+        : typeof data?.message === 'string'
+          ? data.message
+          : typeof payload?.message === 'string'
+            ? payload.message
+            : null;
 
-  return { ip };
+  return { ip, success, error: errorMessage };
 }
