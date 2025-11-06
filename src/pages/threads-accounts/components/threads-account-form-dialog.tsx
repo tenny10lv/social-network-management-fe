@@ -4,7 +4,7 @@ import { useEffect, useMemo } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { RiCheckboxCircleFill } from '@remixicon/react';
-import { AlertCircle, LoaderCircle, UserCheck } from 'lucide-react';
+import { AlertCircle, LoaderCircle, UserCheck, UserPlus } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { Alert, AlertIcon, AlertTitle } from '@/components/ui/alert';
@@ -34,16 +34,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
   ThreadsAccountFormValues,
   ThreadsAccountRecord,
   ProxyOption,
+  CategoryOption,
   threadsAccountBaseSchema,
   threadsAccountCreateSchema,
   createThreadsAccount,
   getThreadsAccount,
   getProxyOptions,
+  getCategoryOptions,
   updateThreadsAccount,
 } from '../api';
 
@@ -54,56 +55,28 @@ interface ThreadsAccountFormDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const PLATFORM_OPTIONS = [
-  { value: 'FACEBOOK', label: 'Facebook' },
-  { value: 'INSTAGRAM', label: 'Instagram' },
-  { value: 'TIKTOK', label: 'TikTok' },
-  { value: 'THREADS', label: 'Threads' },
-];
-
 const DEFAULT_VALUES: ThreadsAccountFormValues = {
-  platform: '',
-  accountName: '',
   username: '',
   password: '',
-  proxyId: null,
-  isActive: true,
+  proxyId: '',
+  categoryId: '',
+  sessionMode: 'persistent',
 };
 
-const resolvePlatformValue = (value?: string | null) => {
-  if (!value) {
-    return '';
-  }
-
-  const trimmed = value.trim();
-
-  if (!trimmed) {
-    return '';
-  }
-
-  const directMatch = PLATFORM_OPTIONS.find((option) => option.value === trimmed);
-  if (directMatch) {
-    return directMatch.value;
-  }
-
-  const caseInsensitiveMatch = PLATFORM_OPTIONS.find(
-    (option) => option.value.toLowerCase() === trimmed.toLowerCase(),
-  );
-
-  return caseInsensitiveMatch?.value ?? trimmed;
-};
-
-const sanitizeProxyId = (value?: string | null) => {
+const sanitizeId = (value?: string | null) => {
   if (value === null || value === undefined) {
-    return null;
+    return '';
   }
 
   const trimmed = String(value).trim();
 
-  return trimmed === '' ? null : trimmed;
+  return trimmed;
 };
 
-const NO_PROXY_OPTION_VALUE = '__no_proxy__';
+const SESSION_MODE_OPTIONS = [
+  { value: 'persistent', label: 'Persistent' },
+  { value: 'ephemeral', label: 'Ephemeral' },
+];
 
 export function ThreadsAccountFormDialog({
   mode,
@@ -142,6 +115,13 @@ export function ThreadsAccountFormDialog({
     staleTime: 5 * 60 * 1000,
   });
 
+  const categoriesQuery = useQuery<CategoryOption[], Error>({
+    queryKey: ['threads-category-options'],
+    queryFn: getCategoryOptions,
+    enabled: open,
+    staleTime: 5 * 60 * 1000,
+  });
+
   useEffect(() => {
     if (open && mode === 'create') {
       reset(DEFAULT_VALUES);
@@ -151,12 +131,11 @@ export function ThreadsAccountFormDialog({
   useEffect(() => {
     if (account && mode === 'edit' && open) {
       reset({
-        platform: resolvePlatformValue(account.platform),
-        accountName: account.accountName ?? '',
         username: account.username ?? '',
         password: '',
-        proxyId: sanitizeProxyId(account.proxyId),
-        isActive: account.isActive,
+        proxyId: sanitizeId(account.proxyId),
+        categoryId: sanitizeId(account.categoryId),
+        sessionMode: account.sessionMode ?? 'persistent',
       });
     }
   }, [account, mode, open, reset]);
@@ -168,7 +147,7 @@ export function ThreadsAccountFormDialog({
       return options;
     }
 
-    const normalizedId = sanitizeProxyId(account.proxyId);
+    const normalizedId = sanitizeId(account.proxyId);
 
     if (!normalizedId || options.some((option) => option.id === normalizedId)) {
       return options;
@@ -183,6 +162,28 @@ export function ThreadsAccountFormDialog({
     ];
   }, [account, proxiesQuery.data]);
 
+  const categoryOptions = useMemo(() => {
+    const options = categoriesQuery.data ?? [];
+
+    if (!account || !account.categoryId) {
+      return options;
+    }
+
+    const normalizedId = sanitizeId(account.categoryId);
+
+    if (!normalizedId || options.some((option) => option.id === normalizedId)) {
+      return options;
+    }
+
+    return [
+      ...options,
+      {
+        id: normalizedId,
+        name: account.categoryName ?? 'Current category',
+      },
+    ];
+  }, [account, categoriesQuery.data]);
+
   const createMutation = useMutation({
     mutationFn: (values: ThreadsAccountFormValues) => createThreadsAccount(values),
     onSuccess: () => {
@@ -193,7 +194,7 @@ export function ThreadsAccountFormDialog({
             <AlertIcon>
               <RiCheckboxCircleFill />
             </AlertIcon>
-            <AlertTitle>Threads account created successfully.</AlertTitle>
+            <AlertTitle>Threads account added successfully.</AlertTitle>
           </Alert>
         ),
         {
@@ -201,6 +202,19 @@ export function ThreadsAccountFormDialog({
         },
       );
       onOpenChange(false);
+    },
+    onError: (error) => {
+      toast.custom(
+        (t) => (
+          <Alert variant="mono" icon="destructive" onClose={() => toast.dismiss(t)}>
+            <AlertIcon>
+              <AlertCircle className="size-5" />
+            </AlertIcon>
+            <AlertTitle>{error?.message ?? 'Failed to add Threads account.'}</AlertTitle>
+          </Alert>
+        ),
+        { duration: 5000 },
+      );
     },
   });
 
@@ -227,27 +241,58 @@ export function ThreadsAccountFormDialog({
       );
       onOpenChange(false);
     },
+    onError: (error) => {
+      toast.custom(
+        (t) => (
+          <Alert variant="mono" icon="destructive" onClose={() => toast.dismiss(t)}>
+            <AlertIcon>
+              <AlertCircle className="size-5" />
+            </AlertIcon>
+            <AlertTitle>{error?.message ?? 'Failed to update Threads account.'}</AlertTitle>
+          </Alert>
+        ),
+        { duration: 5000 },
+      );
+    },
   });
 
   const mutation = mode === 'create' ? createMutation : updateMutation;
   const isSubmitting = mutation.isPending;
 
   const onSubmit = (values: ThreadsAccountFormValues) => {
+    const trimmedPassword = values.password?.trim() ?? '';
+
     mutation.mutate({
-      ...values,
-      password: mode === 'edit' && !values.password ? undefined : values.password,
+      username: values.username.trim(),
+      password: mode === 'edit' && !trimmedPassword ? undefined : trimmedPassword,
+      proxyId: values.proxyId.trim(),
+      categoryId: values.categoryId.trim(),
+      sessionMode: values.sessionMode,
     });
   };
 
-  const title = mode === 'create' ? 'Create Threads Account' : 'Update Threads Account';
-  const submitLabel = mode === 'create' ? 'Create Threads Account' : 'Update Threads Account';
+  const title = mode === 'create' ? 'Add Threads Account' : 'Update Threads Account';
+  const submitLabel = mode === 'create' ? 'Create' : 'Save Changes';
+  const TitleIcon = mode === 'create' ? UserPlus : UserCheck;
+
+  const proxyPlaceholder = proxiesQuery.isLoading
+    ? 'Loading proxies...'
+    : proxiesQuery.isError
+      ? 'Unable to load proxies'
+      : 'Select proxy';
+
+  const categoryPlaceholder = categoriesQuery.isLoading
+    ? 'Loading categories...'
+    : categoriesQuery.isError
+      ? 'Unable to load categories'
+      : 'Select category';
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <UserCheck className="size-5" />
+            <TitleIcon className="size-5" />
             {title}
           </DialogTitle>
         </DialogHeader>
@@ -269,20 +314,112 @@ export function ThreadsAccountFormDialog({
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
                 <FormField
                   control={form.control}
-                  name="platform"
+                  name="username"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Platform</FormLabel>
+                      <FormLabel>Username</FormLabel>
                       <FormControl>
-                        <Select
-                          value={field.value || undefined}
-                          onValueChange={field.onChange}
-                        >
+                        <Input
+                          placeholder="threads-user"
+                          autoComplete="username"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Password</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="password"
+                          placeholder={mode === 'edit' ? 'Leave blank to keep current' : 'Sup3rS3cret!'}
+                          autoComplete={mode === 'create' ? 'new-password' : 'current-password'}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                  <FormField
+                    control={form.control}
+                    name="proxyId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Proxy</FormLabel>
+                        <FormControl>
+                          <Select value={field.value || undefined} onValueChange={field.onChange}>
+                            <SelectTrigger disabled={proxiesQuery.isLoading}>
+                              <SelectValue placeholder={proxyPlaceholder} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {proxyOptions.map((proxy) => (
+                                <SelectItem key={proxy.id} value={proxy.id}>
+                                  {proxy.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                        {proxiesQuery.isError && (
+                          <p className="text-xs text-destructive">
+                            {proxiesQuery.error?.message ?? 'Failed to load proxies.'}
+                          </p>
+                        )}
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="categoryId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Category</FormLabel>
+                        <FormControl>
+                          <Select value={field.value || undefined} onValueChange={field.onChange}>
+                            <SelectTrigger disabled={categoriesQuery.isLoading}>
+                              <SelectValue placeholder={categoryPlaceholder} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {categoryOptions.map((category) => (
+                                <SelectItem key={category.id} value={category.id}>
+                                  {category.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                        {categoriesQuery.isError && (
+                          <p className="text-xs text-destructive">
+                            {categoriesQuery.error?.message ?? 'Failed to load categories.'}
+                          </p>
+                        )}
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <FormField
+                  control={form.control}
+                  name="sessionMode"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Session Mode</FormLabel>
+                      <FormControl>
+                        <Select value={field.value} onValueChange={field.onChange}>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select platform" />
+                            <SelectValue placeholder="Select session mode" />
                           </SelectTrigger>
                           <SelectContent>
-                            {PLATFORM_OPTIONS.map((option) => (
+                            {SESSION_MODE_OPTIONS.map((option) => (
                               <SelectItem key={option.value} value={option.value}>
                                 {option.label}
                               </SelectItem>
@@ -294,123 +431,16 @@ export function ThreadsAccountFormDialog({
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="accountName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Threads Account Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Marketing Threads Account" autoComplete="off" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-                  <FormField
-                    control={form.control}
-                    name="username"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Username</FormLabel>
-                        <FormControl>
-                          <Input placeholder="username" autoComplete="username" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Password</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="password"
-                            placeholder={
-                              mode === 'edit'
-                                ? 'Leave blank to keep current'
-                                : 'Password'
-                            }
-                            autoComplete={mode === 'create' ? 'new-password' : 'current-password'}
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <FormField
-                  control={form.control}
-                  name="proxyId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Proxy</FormLabel>
-                      <FormControl>
-                        <Select
-                          value={field.value ?? NO_PROXY_OPTION_VALUE}
-                          onValueChange={(value) =>
-                            field.onChange(value === NO_PROXY_OPTION_VALUE ? null : value)
-                          }
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select proxy" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value={NO_PROXY_OPTION_VALUE}>No proxy</SelectItem>
-                            {proxyOptions.map((proxy) => (
-                              <SelectItem key={proxy.id} value={proxy.id}>
-                                {proxy.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                      {proxiesQuery.isError && (
-                        <p className="text-xs text-destructive">
-                          {proxiesQuery.error?.message ?? 'Failed to load proxies.'}
-                        </p>
-                      )}
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="isActive"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center gap-3 rounded-lg border border-border/60 p-4">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={(value) => field.onChange(Boolean(value))}
-                        />
-                      </FormControl>
-                      <div className="space-y-0.5">
-                        <FormLabel className="text-sm">Active</FormLabel>
-                        <p className="text-xs text-muted-foreground">
-                          Enable this Threads account for automations and scheduled jobs.
-                        </p>
-                      </div>
-                    </FormItem>
-                  )}
-                />
-                <DialogFooter>
-                  <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting && (
-                      <LoaderCircle className="mr-2 size-4 animate-spin" />
-                    )}
-                    {submitLabel}
-                  </Button>
+                <DialogFooter className="gap-2 sm:justify-between">
                   <DialogClose asChild>
-                    <Button type="button" variant="outline">
+                    <Button type="button" variant="outline" disabled={isSubmitting}>
                       Cancel
                     </Button>
                   </DialogClose>
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting && <LoaderCircle className="mr-2 size-4 animate-spin" />}
+                    {submitLabel}
+                  </Button>
                 </DialogFooter>
               </form>
             </Form>

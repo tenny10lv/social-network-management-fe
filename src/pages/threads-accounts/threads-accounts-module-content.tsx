@@ -1,14 +1,15 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import type { ChangeEvent } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { RiCheckboxCircleFill } from '@remixicon/react';
 import {
   EllipsisVertical,
   LoaderCircle,
-  LogIn,
   Pencil,
   RefreshCcw,
+  Search,
   Server,
   Trash2,
 } from 'lucide-react';
@@ -36,6 +37,7 @@ import {
   CardTitle,
   CardToolbar,
 } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Pagination, PaginationContent, PaginationItem } from '@/components/ui/pagination';
 import {
@@ -50,11 +52,24 @@ import {
   ThreadsAccountRecord,
   deleteThreadsAccount,
   getThreadsAccounts,
-  loginThreadsAccount,
 } from './api';
 import { ThreadsAccountFormDialog } from './components/threads-account-form-dialog';
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50];
+
+const formatSessionMode = (value?: string | null) => {
+  if (!value) {
+    return '—';
+  }
+
+  const trimmed = value.trim();
+
+  if (!trimmed) {
+    return '—';
+  }
+
+  return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
+};
 
 const formatDate = (value?: string | null) => {
   if (!value) {
@@ -77,12 +92,14 @@ const formatDate = (value?: string | null) => {
 };
 
 const getStatusBadge = (record: ThreadsAccountRecord) => {
-  const variant = record.isActive ? 'success' : 'secondary';
-  const label = record.status || (record.isActive ? 'Active' : 'Inactive');
+  const normalizedStatus = record.status?.trim() ?? '';
+  const label = normalizedStatus || (record.isActive ? 'Active' : 'Inactive');
+  const isActive = normalizedStatus.toLowerCase() === 'active' || record.isActive;
+  const variant = isActive ? 'success' : 'secondary';
 
   return (
     <Badge variant={variant} appearance="light">
-      {label}
+      {label || 'Unknown'}
     </Badge>
   );
 };
@@ -91,15 +108,37 @@ export function ThreadsAccountsModuleContent() {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(PAGE_SIZE_OPTIONS[0]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [formMode, setFormMode] = useState<'create' | 'edit'>('create');
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [loginAccountId, setLoginAccountId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const handler = window.setTimeout(() => {
+      setDebouncedSearch(searchTerm.trim());
+    }, 300);
+
+    return () => {
+      window.clearTimeout(handler);
+    };
+  }, [searchTerm]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, statusFilter]);
 
   const accountsQuery = useQuery({
-    queryKey: ['threadsAccounts', page, limit],
-    queryFn: () => getThreadsAccounts({ page, limit }),
+    queryKey: ['threadsAccounts', page, limit, debouncedSearch, statusFilter],
+    queryFn: () =>
+      getThreadsAccounts({
+        page,
+        limit,
+        search: debouncedSearch || undefined,
+        status: statusFilter !== 'all' ? statusFilter : undefined,
+      }),
   });
 
   const deleteMutation = useMutation({
@@ -122,31 +161,18 @@ export function ThreadsAccountsModuleContent() {
       setIsConfirmOpen(false);
       setSelectedAccountId(null);
     },
-  });
-
-  const loginMutation = useMutation({
-    mutationFn: (id: string) => loginThreadsAccount(id),
-    onMutate: (id: string) => {
-      setLoginAccountId(id);
-    },
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['threadsAccounts'] });
+    onError: (error) => {
       toast.custom(
         (t) => (
-          <Alert variant="mono" icon="success" onClose={() => toast.dismiss(t)}>
+          <Alert variant="mono" icon="destructive" onClose={() => toast.dismiss(t)}>
             <AlertIcon>
-              <RiCheckboxCircleFill />
+              <Server className="size-5" />
             </AlertIcon>
-            <AlertTitle>Threads account login started successfully.</AlertTitle>
+            <AlertTitle>{error?.message ?? 'Failed to delete Threads account.'}</AlertTitle>
           </Alert>
         ),
-        {
-          duration: 4000,
-        },
+        { duration: 5000 },
       );
-    },
-    onSettled: () => {
-      setLoginAccountId(null);
     },
   });
 
@@ -211,6 +237,16 @@ export function ThreadsAccountsModuleContent() {
     setPage(1);
   };
 
+  const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(event.target.value);
+  };
+
+  const handleStatusFilterChange = (value: string) => {
+    if (value === 'active' || value === 'inactive' || value === 'all') {
+      setStatusFilter(value);
+    }
+  };
+
   const handlePreviousPage = () => {
     if (paginationMeta.canGoPrevious) {
       setPage((current) => Math.max(1, current - 1));
@@ -228,6 +264,9 @@ export function ThreadsAccountsModuleContent() {
   const error = accountsQuery.error as Error | null;
   const records: ThreadsAccountRecord[] = data?.data ?? [];
 
+  const statusSelectPlaceholder =
+    statusFilter === 'all' ? 'All statuses' : statusFilter === 'active' ? 'Active' : 'Inactive';
+
   return (
     <>
       <Card>
@@ -238,29 +277,54 @@ export function ThreadsAccountsModuleContent() {
               Manage connected Threads accounts and credentials.
             </span>
           </CardHeading>
-          <CardToolbar>
-            <Button onClick={openCreateModal}>Create Threads Account</Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => void queryClient.invalidateQueries({ queryKey: ['threadsAccounts'] })}
-            >
-              <RefreshCcw className="size-4" />
-            </Button>
+          <CardToolbar className="flex w-full flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div className="w-full lg:max-w-[65%] lg:flex-1">
+              <div className="relative w-full">
+                <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  type="search"
+                  value={searchTerm}
+                  onChange={handleSearchChange}
+                  placeholder="Search by username, proxy, or category"
+                  className="w-full pl-9"
+                />
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <Select value={statusFilter} onValueChange={handleStatusFilterChange}>
+                <SelectTrigger className="w-[160px]">
+                  <SelectValue placeholder="Status">{statusSelectPlaceholder}</SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All statuses</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="inactive">Inactive</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button onClick={openCreateModal}>Add Threads Account</Button>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => void accountsQuery.refetch()}
+                disabled={accountsQuery.isRefetching}
+              >
+                <RefreshCcw className={accountsQuery.isRefetching ? 'size-4 animate-spin' : 'size-4'} />
+              </Button>
+            </div>
           </CardToolbar>
         </CardHeader>
         <CardTable>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Platform</TableHead>
-                <TableHead>Account Name</TableHead>
                 <TableHead>Username</TableHead>
                 <TableHead>Proxy</TableHead>
+                <TableHead>Category</TableHead>
+                <TableHead>Session Mode</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Created</TableHead>
                 <TableHead>Updated</TableHead>
-                <TableHead className="sticky right-0 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/75">
+                <TableHead>
                   Actions
                 </TableHead>
               </TableRow>
@@ -295,14 +359,14 @@ export function ThreadsAccountsModuleContent() {
               ) : (
                 records.map((account) => (
                   <TableRow key={account.id}>
-                    <TableCell className="font-medium">{account.platform || '—'}</TableCell>
-                    <TableCell>{account.accountName || '—'}</TableCell>
                     <TableCell>{account.username || '—'}</TableCell>
                     <TableCell>{account.proxyName ?? account.proxyId ?? '—'}</TableCell>
+                    <TableCell>{account.categoryName ?? account.categoryId ?? '—'}</TableCell>
+                    <TableCell>{formatSessionMode(account.sessionMode)}</TableCell>
                     <TableCell>{getStatusBadge(account)}</TableCell>
                     <TableCell>{formatDate(account.createdAt)}</TableCell>
                     <TableCell>{formatDate(account.updatedAt)}</TableCell>
-                    <TableCell className="sticky right-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/75">
+                    <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon" className="hover:bg-muted">
@@ -320,17 +384,6 @@ export function ThreadsAccountsModuleContent() {
                           >
                             <Trash2 className="me-2 size-4" />
                             Delete
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => loginMutation.mutate(account.id)}
-                            disabled={loginMutation.isPending && loginAccountId === account.id}
-                          >
-                            {loginMutation.isPending && loginAccountId === account.id ? (
-                              <LoaderCircle className="me-2 size-4 animate-spin" />
-                            ) : (
-                              <LogIn className="me-2 size-4" />
-                            )}
-                            Login
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>

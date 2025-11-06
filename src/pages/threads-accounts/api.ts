@@ -9,12 +9,14 @@ import {
 } from '@/lib/api';
 
 export const threadsAccountBaseSchema = z.object({
-  platform: z.string().min(1, 'Platform is required'),
-  accountName: z.string().min(1, 'Account name is required'),
   username: z.string().min(1, 'Username is required'),
   password: z.string().optional(),
-  proxyId: z.string().nullable().optional(),
-  isActive: z.boolean(),
+  proxyId: z.string().min(1, 'Proxy is required'),
+  categoryId: z.string().min(1, 'Category is required'),
+  sessionMode: z.enum(['persistent', 'ephemeral'], {
+    required_error: 'Session mode is required',
+    invalid_type_error: 'Session mode must be persistent or ephemeral',
+  }),
 });
 
 export const threadsAccountCreateSchema = threadsAccountBaseSchema.extend({
@@ -25,15 +27,14 @@ export type ThreadsAccountFormValues = z.infer<typeof threadsAccountBaseSchema>;
 
 export type ThreadsAccountRecord = {
   id: string;
-  platform: string;
-  accountName: string;
   username: string;
   proxyId?: string | null;
   proxyName?: string | null;
-  status: string;
-  isActive: boolean;
-  accessToken?: string | null;
-  refreshToken?: string | null;
+  categoryId?: string | null;
+  categoryName?: string | null;
+  sessionMode?: string | null;
+  status?: string | null;
+  isActive?: boolean;
   createdAt?: string | null;
   updatedAt?: string | null;
 };
@@ -49,6 +50,11 @@ export type ThreadsAccountListResponse = {
 };
 
 export type ProxyOption = {
+  id: string;
+  name: string;
+};
+
+export type CategoryOption = {
   id: string;
   name: string;
 };
@@ -131,6 +137,28 @@ const normalizeStatus = (value: unknown) => {
   };
 };
 
+const normalizeSessionMode = (value: unknown): string | null => {
+  if (typeof value !== 'string') {
+    return null;
+  }
+
+  const trimmed = value.trim();
+
+  if (!trimmed) {
+    return null;
+  }
+
+  if (trimmed.toLowerCase() === 'persistent') {
+    return 'persistent';
+  }
+
+  if (trimmed.toLowerCase() === 'ephemeral') {
+    return 'ephemeral';
+  }
+
+  return trimmed;
+};
+
 const normalizeThreadsAccountRecord = (record: any): ThreadsAccountRecord => {
   const proxy = record?.proxy ?? record?.proxyInfo ?? record?.proxy_info ?? null;
   const proxyId =
@@ -148,6 +176,22 @@ const normalizeThreadsAccountRecord = (record: any): ThreadsAccountRecord => {
     proxy?.title ??
     null;
 
+  const category = record?.category ?? record?.categoryInfo ?? record?.category_info ?? null;
+  const categoryId =
+    record?.categoryId ??
+    record?.category_id ??
+    category?.id ??
+    category?._id ??
+    category?.uuid ??
+    null;
+  const categoryName =
+    record?.categoryName ??
+    record?.category_name ??
+    category?.name ??
+    category?.label ??
+    category?.title ??
+    null;
+
   const statusSource =
     record?.status ??
     record?.state ??
@@ -159,15 +203,14 @@ const normalizeThreadsAccountRecord = (record: any): ThreadsAccountRecord => {
 
   return {
     id: String(record?.id ?? record?.uuid ?? record?._id ?? ''),
-    platform: String(record?.platform ?? record?.platformName ?? record?.provider ?? ''),
-    accountName: String(record?.accountName ?? record?.name ?? record?.displayName ?? ''),
     username: String(record?.username ?? record?.userName ?? record?.login ?? ''),
     proxyId: proxyId ? String(proxyId) : null,
     proxyName: proxyName ? String(proxyName) : null,
+    categoryId: categoryId ? String(categoryId) : null,
+    categoryName: categoryName ? String(categoryName) : null,
+    sessionMode: normalizeSessionMode(record?.sessionMode ?? record?.session_mode ?? record?.mode),
     status,
     isActive,
-    accessToken: record?.accessToken ?? record?.access_token ?? null,
-    refreshToken: record?.refreshToken ?? record?.refresh_token ?? null,
     createdAt: record?.createdAt ?? record?.created_at ?? null,
     updatedAt: record?.updatedAt ?? record?.updated_at ?? null,
   };
@@ -211,16 +254,33 @@ const normalizeListPayload = (
 export async function getThreadsAccounts({
   page,
   limit,
+  search,
+  status,
 }: {
   page: number;
   limit: number;
+  search?: string;
+  status?: string;
 }): Promise<ThreadsAccountListResponse> {
   const params = new URLSearchParams({
     page: String(page),
     limit: String(limit),
   });
 
-  const response = await fetch(buildApiUrl(`threads-accounts?${params.toString()}`));
+  if (search) {
+    params.set('search', search);
+  }
+
+  if (status) {
+    params.set('status', status);
+  }
+
+  const response = await fetch(buildApiUrl(`threads-accounts?${params.toString()}`), {
+    headers: {
+      accept: 'application/json',
+      'x-custom-lang': 'en',
+    },
+  });
   const payload = await handleResponse(response);
 
   return normalizeListPayload(payload, page, limit);
@@ -237,20 +297,12 @@ export async function getThreadsAccount(id: string): Promise<ThreadsAccountRecor
 
 const mapThreadsAccountFormValuesToPayload = (values: ThreadsAccountFormValues) => {
   const payload: Record<string, unknown> = {
-    platform: values.platform,
-    accountName: values.accountName,
     username: values.username,
-    status: values.isActive ? 'active' : 'inactive',
-    isActive: values.isActive,
+    password: values.password,
+    proxyId: values.proxyId,
+    categoryId: values.categoryId,
+    sessionMode: values.sessionMode,
   };
-
-  if (values.proxyId) {
-    payload.proxyId = values.proxyId;
-  }
-
-  if (values.password && values.password.trim().length > 0) {
-    payload.password = values.password;
-  }
 
   return payload;
 };
@@ -259,6 +311,8 @@ export async function createThreadsAccount(data: ThreadsAccountFormValues): Prom
   const response = await fetch(buildApiUrl('threads-accounts'), {
     method: 'POST',
     headers: {
+      accept: 'application/json',
+      'x-custom-lang': 'en',
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(mapThreadsAccountFormValuesToPayload(data)),
@@ -278,8 +332,10 @@ export async function updateThreadsAccount({
   data: ThreadsAccountFormValues;
 }): Promise<ThreadsAccountRecord> {
   const response = await fetch(buildApiUrl(`threads-accounts/${id}`), {
-    method: 'PUT',
+    method: 'PATCH',
     headers: {
+      accept: 'application/json',
+      'x-custom-lang': 'en',
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(mapThreadsAccountFormValuesToPayload(data)),
@@ -294,6 +350,10 @@ export async function updateThreadsAccount({
 export async function deleteThreadsAccount(id: string): Promise<void> {
   const response = await fetch(buildApiUrl(`threads-accounts/${id}`), {
     method: 'DELETE',
+    headers: {
+      accept: 'application/json',
+      'x-custom-lang': 'en',
+    },
   });
 
   await handleResponse(response);
@@ -302,6 +362,10 @@ export async function deleteThreadsAccount(id: string): Promise<void> {
 export async function loginThreadsAccount(id: string): Promise<ThreadsAccountRecord> {
   const response = await fetch(buildApiUrl(`threads-accounts/${id}/login`), {
     method: 'POST',
+    headers: {
+      accept: 'application/json',
+      'x-custom-lang': 'en',
+    },
   });
 
   const payload = await handleResponse(response);
@@ -316,7 +380,12 @@ export async function getProxyOptions(): Promise<ProxyOption[]> {
     limit: '100',
   });
 
-  const response = await fetch(buildApiUrl(`proxies?${params.toString()}`));
+  const response = await fetch(buildApiUrl(`proxies?${params.toString()}`), {
+    headers: {
+      accept: 'application/json',
+      'x-custom-lang': 'en',
+    },
+  });
   const payload = await handleResponse(response);
 
   const rawItems = Array.isArray(payload?.data)
@@ -347,4 +416,48 @@ export async function getProxyOptions(): Promise<ProxyOption[]> {
       };
     })
     .filter(Boolean) as ProxyOption[];
+}
+
+export async function getCategoryOptions(): Promise<CategoryOption[]> {
+  const params = new URLSearchParams({
+    page: '1',
+    limit: '100',
+  });
+
+  const response = await fetch(buildApiUrl(`categories?${params.toString()}`), {
+    headers: {
+      accept: 'application/json',
+      'x-custom-lang': 'en',
+    },
+  });
+  const payload = await handleResponse(response);
+
+  const rawItems = Array.isArray(payload?.data)
+    ? payload.data
+    : Array.isArray(payload?.items)
+      ? payload.items
+      : Array.isArray(payload)
+        ? payload
+        : [];
+
+  return rawItems
+    .map((item: any) => {
+      const id =
+        item?.id ??
+        item?.uuid ??
+        item?._id ??
+        (item?.categoryId ?? item?.category_id ?? null);
+
+      const name = item?.name ?? item?.label ?? item?.title;
+
+      if (!id || !name) {
+        return null;
+      }
+
+      return {
+        id: String(id),
+        name: String(name),
+      };
+    })
+    .filter(Boolean) as CategoryOption[];
 }

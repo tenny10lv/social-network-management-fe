@@ -25,7 +25,6 @@ import {
   WatchlistAccount,
 } from './types';
 import { WatchlistAccountsTable } from './components/watchlist-accounts-table';
-import { MyThreadsAccountsTable } from './components/my-threads-accounts-table';
 import { CrawledPostsPanel } from './components/crawled-posts-panel';
 import { ScheduledPostsPanel } from './components/scheduled-posts-panel';
 import { PublishedHistoryPanel } from './components/published-history-panel';
@@ -482,13 +481,13 @@ export function WatchlistModuleContent() {
           </TabsContent>
         </Tabs>
       </div>
-      <div className="self-start xl:col-span-full xl:min-w-[340px]">
+      {/* <div className="self-start xl:col-span-full xl:min-w-[340px]">
         <MyThreadsAccountsTable
           accounts={myAccounts}
           onSetPrimary={handleSetPrimaryAccount}
           onToggleStatus={handleToggleMyAccountStatus}
         />
-      </div>
+      </div> */}
 
       <AddWatchlistAccountDialog
         open={isAddAccountDialogOpen}
