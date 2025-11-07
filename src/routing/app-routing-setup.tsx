@@ -340,6 +340,7 @@ export function AppRoutingSetup() {
           />
           <Route path="/threads-accounts" element={<ThreadsAccountsModulePage />} />
           <Route path="/threads-accounts/watchlist" element={<WatchlistModulePage />} />
+          <Route path="/threads-accounts/watchlist/:threadsAccountId" element={<WatchlistModulePage />} />
           <Route path="/categories" element={<CategoryListPage />} />
           <Route path="/categories/new" element={<CategoryFormPage />} />
           <Route path="/categories/:categoryId/edit" element={<CategoryFormPage />} />

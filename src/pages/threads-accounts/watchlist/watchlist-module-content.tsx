@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -59,18 +59,49 @@ const buildDisplayNameFromUsername = (value: string) => {
     .join(' ');
 };
 
-export function WatchlistModuleContent() {
+type WatchlistModuleContentProps = {
+  initialWatchlistAccountId?: string | null;
+};
+
+export function WatchlistModuleContent({ initialWatchlistAccountId }: WatchlistModuleContentProps = {}) {
+  const matchedInitialAccountId =
+    initialWatchlistAccountId && WATCHLIST_ACCOUNTS.some((account) => account.id === initialWatchlistAccountId)
+      ? initialWatchlistAccountId
+      : null;
   const [watchlistAccounts, setWatchlistAccounts] = useState<WatchlistAccount[]>(WATCHLIST_ACCOUNTS);
   const [myAccounts, setMyAccounts] = useState<MyThreadsAccount[]>(MY_THREADS_ACCOUNTS);
   const [crawledPosts, setCrawledPosts] = useState<CrawledPost[]>(CRAWLED_POSTS);
   const [publishingTasks, setPublishingTasks] = useState<PublishingTask[]>(PUBLISHING_TASKS);
-  const [selectedAccountId, setSelectedAccountId] = useState<string | null>(WATCHLIST_ACCOUNTS[0]?.id ?? null);
+  const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
+    matchedInitialAccountId ?? WATCHLIST_ACCOUNTS[0]?.id ?? null,
+  );
   const [activeTab, setActiveTab] = useState<'crawled' | 'scheduled' | 'published'>('crawled');
   const [tagEditorAccount, setTagEditorAccount] = useState<WatchlistAccount | null>(null);
   const [editorState, setEditorState] = useState<{ postId: string; intent: 'edit' | 'publish' } | null>(null);
   const [scheduleState, setScheduleState] = useState<{ postId: string; taskId?: string } | null>(null);
   const [accountPendingRemoval, setAccountPendingRemoval] = useState<WatchlistAccount | null>(null);
   const [isAddAccountDialogOpen, setAddAccountDialogOpen] = useState(false);
+  const lastAlignedAccountId = useRef<string | null>(matchedInitialAccountId);
+
+  useEffect(() => {
+    if (!initialWatchlistAccountId) {
+      lastAlignedAccountId.current = null;
+      return;
+    }
+
+    if (lastAlignedAccountId.current === initialWatchlistAccountId) {
+      return;
+    }
+
+    const exists = watchlistAccounts.some((account) => account.id === initialWatchlistAccountId);
+
+    if (!exists) {
+      return;
+    }
+
+    lastAlignedAccountId.current = initialWatchlistAccountId;
+    setSelectedAccountId(initialWatchlistAccountId);
+  }, [initialWatchlistAccountId, watchlistAccounts]);
 
   const selectedAccount = useMemo(
     () => watchlistAccounts.find((account) => account.id === selectedAccountId) ?? null,

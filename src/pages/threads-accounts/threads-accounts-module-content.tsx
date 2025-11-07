@@ -2,9 +2,11 @@
 
 import type { ChangeEvent } from 'react';
 import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { RiCheckboxCircleFill } from '@remixicon/react';
 import {
+  Eye,
   EllipsisVertical,
   LoaderCircle,
   Pencil,
@@ -106,6 +108,7 @@ const getStatusBadge = (record: ThreadsAccountRecord) => {
 
 export function ThreadsAccountsModuleContent() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(PAGE_SIZE_OPTIONS[0]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -247,6 +250,10 @@ export function ThreadsAccountsModuleContent() {
     }
   };
 
+  const handleOpenWatchlist = (accountId: string) => {
+    navigate(`/threads-accounts/watchlist/${accountId}`);
+  };
+
   const handlePreviousPage = () => {
     if (paginationMeta.canGoPrevious) {
       setPage((current) => Math.max(1, current - 1));
@@ -377,6 +384,10 @@ export function ThreadsAccountsModuleContent() {
                           <DropdownMenuItem onClick={() => openEditModal(account.id)}>
                             <Pencil className="me-2 size-4" />
                             Update
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleOpenWatchlist(account.id)}>
+                            <Eye className="me-2 size-4" />
+                            Watchlist
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => openDeleteConfirm(account.id)}
