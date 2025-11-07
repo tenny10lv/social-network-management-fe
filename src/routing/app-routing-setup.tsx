@@ -60,6 +60,7 @@ import {
 } from '@/pages/network';
 import { BrowserContextsModulePage } from '@/pages/browser-contexts';
 import { ThreadsAccountsModulePage, WatchlistModulePage } from '@/pages/threads-accounts';
+import { ThreadsWatchlistAccountsModulePage } from '@/pages/threads-watchlist-accounts';
 import { ContentModulePage } from '@/pages/contents';
 import { PublishingModulePage } from '@/pages/publishing';
 import { CategoryDetailPage, CategoryFormPage, CategoryListPage } from '@/modules/category';
@@ -341,6 +342,7 @@ export function AppRoutingSetup() {
           <Route path="/threads-accounts" element={<ThreadsAccountsModulePage />} />
           <Route path="/threads-accounts/watchlist" element={<WatchlistModulePage />} />
           <Route path="/threads-accounts/watchlist/:threadsAccountId" element={<WatchlistModulePage />} />
+          <Route path="/threads-watchlist-accounts" element={<ThreadsWatchlistAccountsModulePage />} />
           <Route path="/categories" element={<CategoryListPage />} />
           <Route path="/categories/new" element={<CategoryFormPage />} />
           <Route path="/categories/:categoryId/edit" element={<CategoryFormPage />} />

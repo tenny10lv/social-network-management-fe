@@ -69,7 +69,7 @@ export function WatchlistModuleContent({ initialWatchlistAccountId }: WatchlistM
       ? initialWatchlistAccountId
       : null;
   const [watchlistAccounts, setWatchlistAccounts] = useState<WatchlistAccount[]>(WATCHLIST_ACCOUNTS);
-  const [myAccounts, setMyAccounts] = useState<MyThreadsAccount[]>(MY_THREADS_ACCOUNTS);
+  const [myAccounts] = useState<MyThreadsAccount[]>(MY_THREADS_ACCOUNTS);
   const [crawledPosts, setCrawledPosts] = useState<CrawledPost[]>(CRAWLED_POSTS);
   const [publishingTasks, setPublishingTasks] = useState<PublishingTask[]>(PUBLISHING_TASKS);
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
@@ -241,20 +241,6 @@ export function WatchlistModuleContent({ initialWatchlistAccountId }: WatchlistM
 
     setAccountPendingRemoval(null);
   }, [accountPendingRemoval, selectedAccountId, watchlistAccounts]);
-
-  const handleToggleMyAccountStatus = useCallback((accountId: string) => {
-    setMyAccounts((previous) =>
-      previous.map((account) =>
-        account.id === accountId
-          ? { ...account, status: account.status === 'active' ? 'paused' : 'active' }
-          : account,
-      ),
-    );
-  }, []);
-
-  const handleSetPrimaryAccount = useCallback((accountId: string) => {
-    setMyAccounts((previous) => previous.map((account) => ({ ...account, isPrimary: account.id === accountId })));
-  }, []);
 
   const openScheduleDialog = useCallback(
     (postId: string, targetAccountId?: string, taskId?: string) => {

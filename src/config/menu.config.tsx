@@ -84,6 +84,7 @@ export const MENU_SIDEBAR: MenuConfig = [
     icon: Users,
     children: [
       { title: 'Threads Accounts', path: '/threads-accounts' },
+      { title: 'Threads Watchlist Accounts', path: '/threads-watchlist-accounts' },
       { title: 'Categories', path: '/categories' },
       { title: 'Team Members', path: '/account/members/team-members' },
       { title: 'Roles & Permissions', path: '/account/members/roles' },
@@ -830,6 +831,11 @@ export const MENU_MEGA: MenuConfig = [
     path: '/threads-accounts',
   },
   {
+    title: 'Threads Watchlist Accounts',
+    icon: UserCheck,
+    path: '/threads-watchlist-accounts',
+  },
+  {
     title: 'Authentication',
     children: [
       {
@@ -1470,6 +1476,12 @@ export const MENU_ROOT: MenuConfig = [
     icon: UserCheck,
     rootPath: '/threads-accounts/',
     path: 'threads-accounts',
+  },
+  {
+    title: 'Threads Watchlist Accounts',
+    icon: UserCheck,
+    rootPath: '/threads-watchlist-accounts/',
+    path: 'threads-watchlist-accounts',
   },
   {
     title: 'Contents',
