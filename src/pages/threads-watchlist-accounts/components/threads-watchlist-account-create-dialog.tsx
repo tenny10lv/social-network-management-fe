@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { RiCheckboxCircleFill } from '@remixicon/react';
 import { AlertCircle, LoaderCircle, UserPlus } from 'lucide-react';
 import { useForm } from 'react-hook-form';
@@ -21,10 +21,13 @@ import {
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 import {
+  getCategoryOptions,
   createThreadsWatchlistAccount,
   threadsWatchlistAccountCreateSchema,
+  type CategoryOption,
   type ThreadsWatchlistAccountCreateValues,
 } from '../api';
 
@@ -35,6 +38,7 @@ interface ThreadsWatchlistAccountCreateDialogProps {
 
 const DEFAULT_VALUES: ThreadsWatchlistAccountCreateValues = {
   username: '',
+  categoryId: '',
 };
 
 export function ThreadsWatchlistAccountCreateDialog({
@@ -50,6 +54,15 @@ export function ThreadsWatchlistAccountCreateDialog({
 
   const { reset } = form;
 
+  const categoriesQuery = useQuery<CategoryOption[], Error>({
+    queryKey: ['threadsWatchlistCategoryOptions'],
+    queryFn: getCategoryOptions,
+    enabled: open,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const categoryOptions = useMemo(() => categoriesQuery.data ?? [], [categoriesQuery.data]);
+
   useEffect(() => {
     if (open) {
       reset(DEFAULT_VALUES);
@@ -58,7 +71,10 @@ export function ThreadsWatchlistAccountCreateDialog({
 
   const mutation = useMutation({
     mutationFn: (values: ThreadsWatchlistAccountCreateValues) =>
-      createThreadsWatchlistAccount({ username: values.username.trim() }),
+      createThreadsWatchlistAccount({
+        username: values.username.trim(),
+        categoryId: values.categoryId.trim(),
+      }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['threadsWatchlistAccounts'] });
       toast.custom(
@@ -92,8 +108,17 @@ export function ThreadsWatchlistAccountCreateDialog({
   const isSubmitting = mutation.isPending;
 
   const onSubmit = (values: ThreadsWatchlistAccountCreateValues) => {
-    mutation.mutate({ username: values.username.trim() });
+    mutation.mutate({
+      username: values.username.trim(),
+      categoryId: values.categoryId.trim(),
+    });
   };
+
+  const categoryPlaceholder = categoriesQuery.isLoading
+    ? 'Loading categories...'
+    : categoriesQuery.isError
+      ? 'Unable to load categories'
+      : 'Select category';
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -116,6 +141,38 @@ export function ThreadsWatchlistAccountCreateDialog({
                     <FormControl>
                       <Input placeholder="threads-user" autoComplete="off" {...field} />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="categoryId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Category</FormLabel>
+                    <FormControl>
+                      <Select
+                        value={field.value || undefined}
+                        onValueChange={field.onChange}
+                      >
+                        <SelectTrigger disabled={categoriesQuery.isLoading}>
+                          <SelectValue placeholder={categoryPlaceholder} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {categoryOptions.map((category) => (
+                            <SelectItem key={category.id} value={category.id}>
+                              {category.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    {categoriesQuery.isError && (
+                      <p className="text-xs text-destructive">
+                        {categoriesQuery.error?.message ?? 'Failed to load categories.'}
+                      </p>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}

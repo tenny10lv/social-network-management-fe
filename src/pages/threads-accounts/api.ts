@@ -13,10 +13,6 @@ export const threadsAccountBaseSchema = z.object({
   password: z.string().optional(),
   proxyId: z.string().min(1, 'Proxy is required'),
   categoryId: z.string().min(1, 'Category is required'),
-  sessionMode: z.enum(['persistent', 'ephemeral'], {
-    required_error: 'Session mode is required',
-    invalid_type_error: 'Session mode must be persistent or ephemeral',
-  }),
 });
 
 export const threadsAccountCreateSchema = threadsAccountBaseSchema.extend({
@@ -301,7 +297,6 @@ const mapThreadsAccountFormValuesToPayload = (values: ThreadsAccountFormValues) 
     password: values.password,
     proxyId: values.proxyId,
     categoryId: values.categoryId,
-    sessionMode: values.sessionMode,
   };
 
   return payload;

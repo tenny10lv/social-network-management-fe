@@ -60,7 +60,6 @@ const DEFAULT_VALUES: ThreadsAccountFormValues = {
   password: '',
   proxyId: '',
   categoryId: '',
-  sessionMode: 'persistent',
 };
 
 const sanitizeId = (value?: string | null) => {
@@ -72,11 +71,6 @@ const sanitizeId = (value?: string | null) => {
 
   return trimmed;
 };
-
-const SESSION_MODE_OPTIONS = [
-  { value: 'persistent', label: 'Persistent' },
-  { value: 'ephemeral', label: 'Ephemeral' },
-];
 
 export function ThreadsAccountFormDialog({
   mode,
@@ -135,7 +129,6 @@ export function ThreadsAccountFormDialog({
         password: '',
         proxyId: sanitizeId(account.proxyId),
         categoryId: sanitizeId(account.categoryId),
-        sessionMode: account.sessionMode ?? 'persistent',
       });
     }
   }, [account, mode, open, reset]);
@@ -267,7 +260,6 @@ export function ThreadsAccountFormDialog({
       password: mode === 'edit' && !trimmedPassword ? undefined : trimmedPassword,
       proxyId: values.proxyId.trim(),
       categoryId: values.categoryId.trim(),
-      sessionMode: values.sessionMode,
     });
   };
 
@@ -407,30 +399,12 @@ export function ThreadsAccountFormDialog({
                     )}
                   />
                 </div>
-                <FormField
-                  control={form.control}
-                  name="sessionMode"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Session Mode</FormLabel>
-                      <FormControl>
-                        <Select value={field.value} onValueChange={field.onChange}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select session mode" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {SESSION_MODE_OPTIONS.map((option) => (
-                              <SelectItem key={option.value} value={option.value}>
-                                {option.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <FormItem>
+                  <FormLabel>Session Mode</FormLabel>
+                  <FormControl>
+                    <Input value="persistent/ephemeral" disabled readOnly />
+                  </FormControl>
+                </FormItem>
                 <DialogFooter className="gap-2 sm:justify-between">
                   <DialogClose asChild>
                     <Button type="button" variant="outline" disabled={isSubmitting}>

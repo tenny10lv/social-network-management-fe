@@ -9,6 +9,7 @@ import {
 
 export const threadsWatchlistAccountCreateSchema = z.object({
   username: z.string().min(1, 'Username is required'),
+  categoryId: z.string({ required_error: 'Category is required' }).min(1, 'Category is required'),
 });
 
 export const threadsWatchlistAccountUpdateSchema = z.object({
@@ -30,7 +31,6 @@ export type ThreadsWatchlistAccountUpdateValues = z.infer<
 export type ThreadsWatchlistAccountRecord = {
   id: string;
   username: string;
-  platform?: string | null;
   status?: string | null;
   jobId?: string | null;
   accountName?: string | null;
@@ -236,14 +236,6 @@ const normalizeWatchlistAccount = (
   return {
     id: String(record?.id ?? record?._id ?? record?.uuid ?? ''),
     username: String(record?.username ?? record?.userName ?? record?.handle ?? ''),
-    platform:
-      typeof record?.platform === 'string'
-        ? record?.platform
-        : typeof record?.platformName === 'string'
-          ? record?.platformName
-          : typeof record?.platform_name === 'string'
-            ? record?.platform_name
-            : null,
     status: statusResult.status,
     jobId:
       typeof record?.jobId === 'string'
@@ -416,6 +408,7 @@ export const createThreadsWatchlistAccount = async (
 ): Promise<ThreadsWatchlistAccountRecord> => {
   const payload = {
     username: values.username.trim(),
+    categoryId: values.categoryId.trim(),
   };
 
   const response = await fetch(buildApiUrl('threads/watchlist/accounts'), {

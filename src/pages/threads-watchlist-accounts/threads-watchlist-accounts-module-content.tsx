@@ -337,7 +337,6 @@ export function ThreadsWatchlistAccountsModuleContent() {
               <TableRow>
                 <TableHead>Avatar</TableHead>
                 <TableHead>Username</TableHead>
-                <TableHead>Platform</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Follower Count</TableHead>
                 <TableHead>Verified</TableHead>
@@ -349,7 +348,7 @@ export function ThreadsWatchlistAccountsModuleContent() {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="py-12 text-center text-muted-foreground">
+                  <TableCell colSpan={8} className="py-12 text-center text-muted-foreground">
                     <div className="flex items-center justify-center gap-2 text-sm">
                       <LoaderCircle className="size-4 animate-spin" />
                       Loading watchlist accounts...
@@ -358,7 +357,7 @@ export function ThreadsWatchlistAccountsModuleContent() {
                 </TableRow>
               ) : hasError ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="py-6">
+                  <TableCell colSpan={8} className="py-6">
                     <Alert variant="mono" icon="destructive">
                       <AlertIcon>
                         <AlertCircle className="size-5" />
@@ -369,7 +368,7 @@ export function ThreadsWatchlistAccountsModuleContent() {
                 </TableRow>
               ) : records.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="py-12 text-center text-muted-foreground">
+                  <TableCell colSpan={8} className="py-12 text-center text-muted-foreground">
                     No watchlist accounts found.
                   </TableCell>
                 </TableRow>
@@ -390,7 +389,6 @@ export function ThreadsWatchlistAccountsModuleContent() {
                         )}
                       </div>
                     </TableCell>
-                    <TableCell>{account.platform ?? '—'}</TableCell>
                     <TableCell>{getStatusBadge(account)}</TableCell>
                     <TableCell>{formatFollowerCount(account.followerCount)}</TableCell>
                     <TableCell>{renderVerifiedBadge(account.isVerified)}</TableCell>
