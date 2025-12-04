@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,13 +17,13 @@ import {
   CRAWLED_POSTS,
   MY_THREADS_ACCOUNTS,
   PUBLISHING_TASKS,
-  WATCHLIST_ACCOUNTS,
 } from './mock-data';
 import {
   CrawledPost,
   MyThreadsAccount,
   PublishingTask,
   WatchlistAccount,
+  WatchlistAccountRow,
 } from './types';
 import { WatchlistAccountsTable } from './components/watchlist-accounts-table';
 import { CrawledPostsPanel } from './components/crawled-posts-panel';
@@ -32,6 +33,7 @@ import { PostEditorDialog } from './components/post-editor-dialog';
 import { SchedulePostDialog } from './components/schedule-post-dialog';
 import { WatchlistTagsDialog } from './components/watchlist-tags-dialog';
 import { AddWatchlistAccountDialog } from './components/add-watchlist-account-dialog';
+import { getWatchlistAccountsByThreadsAccount } from './api';
 
 const createId = () =>
   typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
@@ -39,11 +41,6 @@ const createId = () =>
     : Math.random().toString(36).slice(2, 11);
 
 const sanitizeUsername = (value: string) => value.trim().replace(/^@+/, '');
-
-const buildHandleFromUsername = (value: string) => {
-  const sanitized = sanitizeUsername(value);
-  return sanitized ? `@${sanitized}` : '';
-};
 
 const buildDisplayNameFromUsername = (value: string) => {
   const sanitized = sanitizeUsername(value);
@@ -59,49 +56,170 @@ const buildDisplayNameFromUsername = (value: string) => {
     .join(' ');
 };
 
-type WatchlistModuleContentProps = {
-  initialWatchlistAccountId?: string | null;
+const TABLE_PAGE_SIZE_OPTIONS = [5, 10, 20];
+
+const pickValidDateValue = (candidates: (string | null | undefined)[]) => {
+  for (const candidate of candidates) {
+    if (!candidate) {
+      continue;
+    }
+
+    const timestamp = Date.parse(candidate);
+
+    if (!Number.isNaN(timestamp)) {
+      return new Date(timestamp).toISOString();
+    }
+  }
+
+  return null;
 };
 
-export function WatchlistModuleContent({ initialWatchlistAccountId }: WatchlistModuleContentProps = {}) {
-  const matchedInitialAccountId =
-    initialWatchlistAccountId && WATCHLIST_ACCOUNTS.some((account) => account.id === initialWatchlistAccountId)
-      ? initialWatchlistAccountId
-      : null;
-  const [watchlistAccounts, setWatchlistAccounts] = useState<WatchlistAccount[]>(WATCHLIST_ACCOUNTS);
+const deriveRiskLevel = (record: WatchlistAccount): WatchlistAccountRow['riskLevel'] =>
+  record.isVerified ? 'low' : 'medium';
+
+const deriveCategory = (record: WatchlistAccount) =>
+  record.category?.name?.trim() ||
+  record.note?.trim() ||
+  (record.category?.id && String(record.category.id)) ||
+  (record.categoryId && String(record.categoryId)) ||
+  'Uncategorized';
+
+const deriveTags = (record: WatchlistAccount) => {
+  if (record.note) {
+    const parts = record.note
+      .split(',')
+      .map((entry) => entry.trim())
+      .filter(Boolean);
+
+    if (parts.length > 0) {
+      return parts;
+    }
+
+    if (record.note.trim()) {
+      return [record.note.trim()];
+    }
+  }
+
+  return [] as string[];
+};
+
+const mapWatchlistAccountToRow = (record: WatchlistAccount): WatchlistAccountRow => {
+  const username = sanitizeUsername(record.username);
+  const handle = username ? `@${username}` : record.username || '—';
+  const displayName =
+    record.accountName?.trim() ||
+    record.fullName?.trim() ||
+    buildDisplayNameFromUsername(username || record.username) ||
+    'Watchlist Account';
+
+  const monitoringSince =
+    pickValidDateValue([record.createdAt, record.updatedAt, record.lastSyncedAt]) ?? new Date().toISOString();
+  const lastCrawledAt =
+    pickValidDateValue([record.lastSyncedAt, record.updatedAt, record.createdAt]) ?? monitoringSince;
+
+  return {
+    id: record.id,
+    username: username || record.username || record.accountName || record.fullName || record.id,
+    handle,
+    displayName,
+    platform: 'Threads',
+    category: deriveCategory(record),
+    tags: deriveTags(record),
+    lastCrawledAt,
+    crawlFrequency: 'Daily',
+    riskLevel: deriveRiskLevel(record),
+    avatarUrl: record.profilePicUrl ?? '',
+  };
+};
+
+type WatchlistModuleContentProps = {
+  threadsAccountId?: string | null;
+};
+
+export function WatchlistModuleContent({ threadsAccountId }: WatchlistModuleContentProps = {}) {
+  const queryClient = useQueryClient();
+  const [watchlistAccounts, setWatchlistAccounts] = useState<WatchlistAccountRow[]>([]);
   const [myAccounts] = useState<MyThreadsAccount[]>(MY_THREADS_ACCOUNTS);
   const [crawledPosts, setCrawledPosts] = useState<CrawledPost[]>(CRAWLED_POSTS);
   const [publishingTasks, setPublishingTasks] = useState<PublishingTask[]>(PUBLISHING_TASKS);
-  const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
-    matchedInitialAccountId ?? WATCHLIST_ACCOUNTS[0]?.id ?? null,
-  );
+  const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'crawled' | 'scheduled' | 'published'>('crawled');
-  const [tagEditorAccount, setTagEditorAccount] = useState<WatchlistAccount | null>(null);
+  const [tagEditorAccount, setTagEditorAccount] = useState<WatchlistAccountRow | null>(null);
   const [editorState, setEditorState] = useState<{ postId: string; intent: 'edit' | 'publish' } | null>(null);
   const [scheduleState, setScheduleState] = useState<{ postId: string; taskId?: string } | null>(null);
-  const [accountPendingRemoval, setAccountPendingRemoval] = useState<WatchlistAccount | null>(null);
+  const [accountPendingRemoval, setAccountPendingRemoval] = useState<WatchlistAccountRow | null>(null);
   const [isAddAccountDialogOpen, setAddAccountDialogOpen] = useState(false);
-  const lastAlignedAccountId = useRef<string | null>(matchedInitialAccountId);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(TABLE_PAGE_SIZE_OPTIONS[0]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
 
   useEffect(() => {
-    if (!initialWatchlistAccountId) {
-      lastAlignedAccountId.current = null;
+    const timer = window.setTimeout(() => {
+      setDebouncedSearch(searchTerm.trim());
+    }, 400);
+
+    return () => window.clearTimeout(timer);
+  }, [searchTerm]);
+
+  useEffect(() => {
+    setPage(1);
+    setSelectedAccountId(null);
+    setWatchlistAccounts([]);
+  }, [threadsAccountId]);
+
+  const watchlistQuery = useQuery({
+    queryKey: [
+      'watchlistAccounts',
+      { threadsAccountId, page, limit: pageSize, search: debouncedSearch },
+    ],
+    queryFn: () =>
+      getWatchlistAccountsByThreadsAccount({
+        page,
+        limit: pageSize,
+        username: debouncedSearch || undefined,
+        fullName: debouncedSearch || undefined,
+        search: debouncedSearch || undefined,
+        threadsAccountId: threadsAccountId ?? '',
+      }),
+    enabled: Boolean(threadsAccountId),
+    keepPreviousData: true,
+  });
+
+  useEffect(() => {
+    const payload = watchlistQuery.data?.data;
+
+    if (!payload) {
       return;
     }
 
-    if (lastAlignedAccountId.current === initialWatchlistAccountId) {
+    setWatchlistAccounts((previous) => {
+      const previousTags = new Map(previous.map((item) => [item.id, item.tags]));
+
+      return payload.map((record) => {
+        const normalized = mapWatchlistAccountToRow(record);
+        const preservedTags = previousTags.get(normalized.id);
+
+        return {
+          ...normalized,
+          tags: preservedTags && preservedTags.length > 0 ? preservedTags : normalized.tags,
+        };
+      });
+    });
+  }, [watchlistQuery.data]);
+
+  useEffect(() => {
+    if (watchlistAccounts.length === 0) {
+      setSelectedAccountId(null);
       return;
     }
 
-    const exists = watchlistAccounts.some((account) => account.id === initialWatchlistAccountId);
-
-    if (!exists) {
+    if (selectedAccountId && watchlistAccounts.some((account) => account.id === selectedAccountId)) {
       return;
     }
 
-    lastAlignedAccountId.current = initialWatchlistAccountId;
-    setSelectedAccountId(initialWatchlistAccountId);
-  }, [initialWatchlistAccountId, watchlistAccounts]);
+    setSelectedAccountId(watchlistAccounts[0]?.id ?? null);
+  }, [selectedAccountId, watchlistAccounts]);
 
   const selectedAccount = useMemo(
     () => watchlistAccounts.find((account) => account.id === selectedAccountId) ?? null,
@@ -157,33 +275,14 @@ export function WatchlistModuleContent({ initialWatchlistAccountId }: WatchlistM
 
   const handleAccountCreated = useCallback(
     ({ username }: { username: string; response: unknown }) => {
-      const sanitizedUsername = sanitizeUsername(username);
+      const normalizedUsername = sanitizeUsername(username);
 
-      if (!sanitizedUsername) {
-        return;
-      }
-
-      const now = new Date().toISOString();
-      const newAccount: WatchlistAccount = {
-        id: createId(),
-        handle: buildHandleFromUsername(sanitizedUsername),
-        displayName: buildDisplayNameFromUsername(sanitizedUsername),
-        platform: 'Threads',
-        category: 'Uncategorized',
-        tags: [],
-        monitoringSince: now,
-        lastCrawledAt: now,
-        crawlFrequency: 'Daily',
-        sentimentTrend: 'neutral',
-        riskLevel: 'medium',
-        status: 'monitoring',
-        avatarUrl: '',
-      };
-
-      setWatchlistAccounts((previous) => [newAccount, ...previous]);
-      setSelectedAccountId(newAccount.id);
+      setPage(1);
+      setSelectedAccountId(null);
+      setSearchTerm(normalizedUsername);
+      void queryClient.invalidateQueries({ queryKey: ['watchlistAccounts'] });
     },
-    [setWatchlistAccounts, setSelectedAccountId],
+    [queryClient],
   );
 
   const handleUpdateTags = useCallback((accountId: string, tags: string[]) => {
@@ -444,17 +543,67 @@ export function WatchlistModuleContent({ initialWatchlistAccountId }: WatchlistM
     [crawledPosts, handlePublishNow, myAccounts, publishingTasks],
   );
 
+  const handlePageChange = useCallback((nextPage: number) => {
+    setPage(Math.max(1, nextPage));
+  }, []);
+
+  const handlePageSizeChange = useCallback((nextSize: number) => {
+    setPageSize(nextSize);
+    setPage(1);
+  }, []);
+
+  const handleSearchChange = useCallback((value: string) => {
+    setSearchTerm(value);
+    setPage(1);
+  }, []);
+
+  const watchlistMeta = watchlistQuery.data?.meta ?? {
+    page,
+    limit: pageSize,
+    totalPages: 1,
+    totalCount: watchlistAccounts.length,
+  };
+  const watchlistPage = watchlistMeta.page ?? page;
+  const watchlistPageSize = watchlistMeta.limit ?? pageSize;
+  const watchlistTotalPages = watchlistMeta.totalPages ?? 1;
+  const watchlistTotalCount = watchlistMeta.totalCount ?? watchlistAccounts.length;
+  const isWatchlistLoading = watchlistQuery.isLoading || (!watchlistQuery.data && watchlistQuery.isFetching);
+  const watchlistErrorMessage =
+    !threadsAccountId
+      ? 'Threads account id is required to load watchlist accounts.'
+      : watchlistQuery.isError && !watchlistQuery.data
+        ? (watchlistQuery.error as Error | null)?.message ?? 'Failed to load watchlist accounts.'
+        : null;
+
+  useEffect(() => {
+    if (watchlistPage > watchlistTotalPages) {
+      setPage(Math.max(1, watchlistTotalPages));
+    }
+  }, [watchlistPage, watchlistTotalPages]);
+
   return (
     <div className="grid w-full gap-6 md:gap-8 xl:grid-cols-[0.4fr_0.6fr] xl:gap-6 xl:items-start 2xl:gap-8">
       <div className="self-start xl:col-span-1 xl:min-w-[340px]">
         <WatchlistAccountsTable
           accounts={watchlistAccounts}
           selectedAccountId={selectedAccountId}
+          searchQuery={searchTerm}
+          page={watchlistPage}
+          pageSize={watchlistPageSize}
+          totalPages={watchlistTotalPages}
+          totalCount={watchlistTotalCount}
+          isLoading={isWatchlistLoading}
+          errorMessage={watchlistErrorMessage}
+          pageSizeOptions={TABLE_PAGE_SIZE_OPTIONS}
+          onSearchQueryChange={handleSearchChange}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
           onSelectAccount={handleSelectAccount}
           onRequestEditTags={setTagEditorAccount}
           onRequestRemove={setAccountPendingRemoval}
           onTriggerCrawl={handleTriggerCrawl}
           onRequestAddAccount={handleRequestAddAccount}
+          onRetry={threadsAccountId ? () => watchlistQuery.refetch() : undefined}
         />
       </div>
       <div className="flex flex-col gap-6 xl:col-span-1">

@@ -19,6 +19,7 @@ import {
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Alert, AlertIcon, AlertTitle } from '@/components/ui/alert';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { TableLoadingState } from '@/components/ui/table-loading-state';
 import {
   Select,
   SelectContent,
@@ -327,14 +328,7 @@ export function NetworkProxiesContent() {
             </TableHeader>
             <TableBody>
               {isLoading ? (
-                <TableRow>
-                  <TableCell colSpan={9} className="py-12 text-center text-muted-foreground">
-                    <div className="flex items-center justify-center gap-2 text-sm">
-                      <LoaderCircle className="size-4 animate-spin" />
-                      Loading proxies...
-                    </div>
-                  </TableCell>
-                </TableRow>
+                <TableLoadingState colSpan={9} message="Loading proxies..." cellClassName="py-12" />
               ) : hasError ? (
                 <TableRow>
                   <TableCell colSpan={9} className="py-6">

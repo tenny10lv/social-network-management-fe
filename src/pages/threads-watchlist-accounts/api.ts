@@ -480,6 +480,25 @@ export const deleteThreadsWatchlistAccount = async (id: string): Promise<void> =
   await handleResponse(response);
 };
 
+export const fetchThreadsWatchlistAccountInfo = async (
+  watchlistAccountId: string,
+): Promise<void> => {
+  const response = await fetch(
+    buildApiUrl('threads/watchlist/accounts/fetch-watchlist-accounts-info'),
+    {
+      method: 'POST',
+      headers: {
+        accept: 'application/json',
+        'x-custom-lang': 'en',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ watchlistAccountId }),
+    },
+  );
+
+  await handleResponse(response);
+};
+
 const resolveCategoryCollection = (payload: unknown): unknown[] => {
   if (Array.isArray(payload)) {
     return payload;

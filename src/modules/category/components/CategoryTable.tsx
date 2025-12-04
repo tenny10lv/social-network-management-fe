@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { TableLoadingState } from '@/components/ui/table-loading-state';
 import { formatDateTime } from '@/lib/helpers';
 
 interface CategoryTableProps {
@@ -61,14 +62,7 @@ export function CategoryTable({
       </TableHeader>
       <TableBody>
         {isLoading ? (
-          <TableRow>
-            <TableCell colSpan={6} className="py-12 text-center text-muted-foreground">
-              <div className="flex items-center justify-center gap-2 text-sm">
-                <LoaderCircle className="size-4 animate-spin" />
-                Loading categories...
-              </div>
-            </TableCell>
-          </TableRow>
+          <TableLoadingState colSpan={6} message="Loading categories..." cellClassName="py-12" />
         ) : isError ? (
           <TableRow>
             <TableCell colSpan={6} className="py-6">

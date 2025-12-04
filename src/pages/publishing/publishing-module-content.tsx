@@ -49,6 +49,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { TableLoadingState } from '@/components/ui/table-loading-state';
 import {
   cancelPublishJob,
   getPublishJobs,
@@ -311,14 +312,7 @@ export function PublishingModuleContent() {
             </TableHeader>
             <TableBody>
               {publishJobsQuery.isLoading ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="py-12 text-center text-muted-foreground">
-                    <div className="flex items-center justify-center gap-2 text-sm">
-                      <LoaderCircle className="size-4 animate-spin" />
-                      Loading publish jobs...
-                    </div>
-                  </TableCell>
-                </TableRow>
+                <TableLoadingState colSpan={7} message="Loading publish jobs..." cellClassName="py-12" />
               ) : hasError ? (
                 <TableRow>
                   <TableCell colSpan={7} className="py-6">

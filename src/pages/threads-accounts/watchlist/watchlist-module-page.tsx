@@ -55,7 +55,7 @@ export function WatchlistModulePage() {
             </Button>
           </div>
         )}
-        <WatchlistModuleContent initialWatchlistAccountId={threadsAccountId} />
+        <WatchlistModuleContent threadsAccountId={threadsAccountId} />
       </Container>
     </Fragment>
   );

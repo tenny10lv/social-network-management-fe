@@ -1,5 +1,42 @@
 export type SentimentLevel = 'positive' | 'neutral' | 'negative';
 
+export interface WatchlistAccount {
+  id: string;
+  username: string;
+  status?: string | null;
+  category?: { id: string; name: string } | null;
+  jobId?: string | null;
+  accountName?: string | null;
+  email?: string | null;
+  fullName?: string | null;
+  pk?: string | null;
+  biography?: string | null;
+  profilePicUrl?: string | null;
+  profilePicFileId?: string | null;
+  followerCount?: number | null;
+  textPostAppIsPrivate?: boolean | null;
+  hasOnboardedToTextPostApp?: boolean | null;
+  isVerified?: boolean | null;
+  categoryId?: string | null;
+  userId?: string | null;
+  note?: string | null;
+  lastSyncedAt?: string | null;
+  isActive?: boolean | null;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+  deletedAt?: string | null;
+}
+
+export type WatchlistAccountsResponse = {
+  data: WatchlistAccount[];
+  meta: {
+    page: number;
+    limit: number;
+    totalPages: number;
+    totalCount: number;
+  };
+};
+
 export interface MyThreadsAccount {
   id: string;
   handle: string;
@@ -12,19 +49,17 @@ export interface MyThreadsAccount {
   avatarUrl?: string;
 }
 
-export interface WatchlistAccount {
+export interface WatchlistAccountRow {
   id: string;
+  username: string;
   handle: string;
   displayName: string;
   platform: 'Threads' | 'Instagram' | 'TikTok' | 'X';
   category: string;
   tags: string[];
-  monitoringSince: string;
   lastCrawledAt: string;
   crawlFrequency: 'Hourly' | 'Daily' | 'Weekly';
-  sentimentTrend: SentimentLevel;
   riskLevel: 'low' | 'medium' | 'high';
-  status: 'monitoring' | 'paused';
   avatarUrl: string;
 }
 

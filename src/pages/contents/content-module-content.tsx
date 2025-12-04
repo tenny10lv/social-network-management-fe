@@ -43,6 +43,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { TableLoadingState } from '@/components/ui/table-loading-state';
 import {
   CONTENT_ACCOUNT_OPTIONS_QUERY_KEY,
   ContentRecord,
@@ -265,14 +266,7 @@ export function ContentModuleContent() {
             </TableHeader>
             <TableBody>
               {isLoading ? (
-                <TableRow>
-                  <TableCell colSpan={8} className="py-12 text-center text-muted-foreground">
-                    <div className="flex items-center justify-center gap-2 text-sm">
-                      <LoaderCircle className="size-4 animate-spin" />
-                      Loading contents...
-                    </div>
-                  </TableCell>
-                </TableRow>
+                <TableLoadingState colSpan={8} message="Loading contents..." cellClassName="py-12" />
               ) : hasError ? (
                 <TableRow>
                   <TableCell colSpan={8} className="py-6">

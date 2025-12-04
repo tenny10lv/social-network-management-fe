@@ -30,6 +30,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { TableLoadingState } from '@/components/ui/table-loading-state';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -391,14 +392,7 @@ export function BrowserContextsModuleContent() {
             </TableHeader>
             <TableBody>
               {isLoading ? (
-                <TableRow>
-                  <TableCell colSpan={11} className="py-12 text-center text-muted-foreground">
-                    <div className="flex items-center justify-center gap-2 text-sm">
-                      <LoaderCircle className="size-4 animate-spin" />
-                      Loading browser contexts...
-                    </div>
-                  </TableCell>
-                </TableRow>
+                <TableLoadingState colSpan={11} message="Loading browser contexts..." cellClassName="py-12" />
               ) : hasError ? (
                 <TableRow>
                   <TableCell colSpan={11} className="py-6">

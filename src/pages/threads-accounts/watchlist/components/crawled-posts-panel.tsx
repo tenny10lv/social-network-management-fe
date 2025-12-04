@@ -20,7 +20,7 @@ import { Label } from '@/components/ui/label';
 import { Pagination, PaginationContent, PaginationItem } from '@/components/ui/pagination';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { CrawledPost, WatchlistAccount } from '../types';
+import { CrawledPost, WatchlistAccountRow } from '../types';
 import { EllipsisVertical, Pencil, Send, Timer, TrendingUp } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { PostMediaThumbnails } from './post-media-thumbnails';
@@ -41,7 +41,7 @@ const PAGE_SIZE_OPTIONS = [5, 10, 20];
 const stickyActionsColumnClasses = cn(stickyActionsColumnBaseClasses, stickyActionsColumnWidthClasses);
 
 interface CrawledPostsPanelProps {
-  account?: WatchlistAccount | null;
+  account?: WatchlistAccountRow | null;
   posts: CrawledPost[];
   onOpenEditor: (postId: string, intent: 'edit' | 'publish') => void;
   onOpenSchedule: (postId: string) => void;

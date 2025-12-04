@@ -4,7 +4,16 @@ import type { ChangeEvent } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { RiCheckboxCircleFill } from '@remixicon/react';
-import { AlertCircle, EllipsisVertical, LoaderCircle, Pencil, RefreshCcw, Search, Trash2 } from 'lucide-react';
+import {
+  AlertCircle,
+  EllipsisVertical,
+  LoaderCircle,
+  Pencil,
+  RefreshCcw,
+  Search,
+  Server,
+  Trash2,
+} from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Alert, AlertIcon, AlertTitle } from '@/components/ui/alert';
@@ -36,10 +45,13 @@ import { Input } from '@/components/ui/input';
 import { Pagination, PaginationContent, PaginationItem } from '@/components/ui/pagination';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { TableLoadingState } from '@/components/ui/table-loading-state';
+import { buildThreadsProfileUrl } from '@/lib/threads';
 
 import {
   type ThreadsWatchlistAccountRecord,
   deleteThreadsWatchlistAccount,
+  fetchThreadsWatchlistAccountInfo,
   getThreadsWatchlistAccounts,
 } from './api';
 import { ThreadsWatchlistAccountCreateDialog } from './components/threads-watchlist-account-create-dialog';
@@ -189,6 +201,37 @@ export function ThreadsWatchlistAccountsModuleContent() {
               <AlertCircle className="size-5" />
             </AlertIcon>
             <AlertTitle>{error?.message ?? 'Failed to delete watchlist account.'}</AlertTitle>
+          </Alert>
+        ),
+        { duration: 5000 },
+      );
+    },
+  });
+
+  const fetchInfoMutation = useMutation({
+    mutationFn: (id: string) => fetchThreadsWatchlistAccountInfo(id),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['threadsWatchlistAccounts'] });
+      toast.custom(
+        (t) => (
+          <Alert variant="mono" icon="success" onClose={() => toast.dismiss(t)}>
+            <AlertIcon>
+              <RiCheckboxCircleFill />
+            </AlertIcon>
+            <AlertTitle>Fetch info job created successfully for this watchlist account.</AlertTitle>
+          </Alert>
+        ),
+        { duration: 4000 },
+      );
+    },
+    onError: (error) => {
+      toast.custom(
+        (t) => (
+          <Alert variant="mono" icon="destructive" onClose={() => toast.dismiss(t)}>
+            <AlertIcon>
+              <Server className="size-5" />
+            </AlertIcon>
+            <AlertTitle>{error?.message ?? 'Failed to fetch info for this watchlist account.'}</AlertTitle>
           </Alert>
         ),
         { duration: 5000 },
@@ -347,14 +390,7 @@ export function ThreadsWatchlistAccountsModuleContent() {
             </TableHeader>
             <TableBody>
               {isLoading ? (
-                <TableRow>
-                  <TableCell colSpan={8} className="py-12 text-center text-muted-foreground">
-                    <div className="flex items-center justify-center gap-2 text-sm">
-                      <LoaderCircle className="size-4 animate-spin" />
-                      Loading watchlist accounts...
-                    </div>
-                  </TableCell>
-                </TableRow>
+                <TableLoadingState colSpan={8} message="Loading watchlist accounts..." cellClassName="py-12" />
               ) : hasError ? (
                 <TableRow>
                   <TableCell colSpan={8} className="py-6">
@@ -373,51 +409,77 @@ export function ThreadsWatchlistAccountsModuleContent() {
                   </TableCell>
                 </TableRow>
               ) : (
-                records.map((account) => (
-                  <TableRow key={account.id}>
-                    <TableCell>
-                      <Avatar className="size-10">
-                        <AvatarImage src={account.avatarUrl ?? undefined} alt={account.username ?? 'Avatar'} />
-                        <AvatarFallback>{getInitials(account.username, account.accountName)}</AvatarFallback>
-                      </Avatar>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col">
-                        <span className="font-medium">{account.username || '—'}</span>
-                        {account.accountName && (
-                          <span className="text-xs text-muted-foreground">{account.accountName}</span>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>{getStatusBadge(account)}</TableCell>
-                    <TableCell>{formatFollowerCount(account.followerCount)}</TableCell>
-                    <TableCell>{renderVerifiedBadge(account.isVerified)}</TableCell>
-                    <TableCell>{formatDate(account.lastSyncedAt)}</TableCell>
-                    <TableCell>{formatDate(account.createdAt)}</TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="hover:bg-muted">
-                            <EllipsisVertical className="size-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => openEditModal(account.id)}>
-                            <Pencil className="me-2 size-4" />
-                            Update
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => openDeleteConfirm(account.id)}
-                            variant="destructive"
-                          >
-                            <Trash2 className="me-2 size-4" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))
+                records.map((account) => {
+                  const threadsProfileUrl = buildThreadsProfileUrl(account.username);
+
+                  return (
+                    <TableRow key={account.id}>
+                      <TableCell>
+                        <Avatar className="size-10">
+                          <AvatarImage src={account.avatarUrl ?? undefined} alt={account.username ?? 'Avatar'} />
+                          <AvatarFallback>{getInitials(account.username, account.accountName)}</AvatarFallback>
+                        </Avatar>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col">
+                          {threadsProfileUrl ? (
+                            <a
+                              href={threadsProfileUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="font-medium text-primary hover:underline"
+                            >
+                              {account.username}
+                            </a>
+                          ) : (
+                            <span className="font-medium">{account.username || '—'}</span>
+                          )}
+                          {account.accountName && (
+                            <span className="text-xs text-muted-foreground">{account.accountName}</span>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>{getStatusBadge(account)}</TableCell>
+                      <TableCell>{formatFollowerCount(account.followerCount)}</TableCell>
+                      <TableCell>{renderVerifiedBadge(account.isVerified)}</TableCell>
+                      <TableCell>{formatDate(account.lastSyncedAt)}</TableCell>
+                      <TableCell>{formatDate(account.createdAt)}</TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="hover:bg-muted">
+                              <EllipsisVertical className="size-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onClick={() => fetchInfoMutation.mutate(account.id)}
+                              disabled={fetchInfoMutation.isPending}
+                            >
+                              {fetchInfoMutation.isPending ? (
+                                <LoaderCircle className="me-2 size-4 animate-spin" />
+                              ) : (
+                                <Server className="me-2 size-4" />
+                              )}
+                              {fetchInfoMutation.isPending ? 'Fetching info...' : 'Fetch Info'}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => openEditModal(account.id)}>
+                              <Pencil className="me-2 size-4" />
+                              Update
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => openDeleteConfirm(account.id)}
+                              variant="destructive"
+                            >
+                              <Trash2 className="me-2 size-4" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
               )}
             </TableBody>
           </Table>
