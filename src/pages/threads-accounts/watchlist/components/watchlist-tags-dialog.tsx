@@ -20,7 +20,7 @@ interface WatchlistTagsDialogProps {
   open: boolean;
   account?: WatchlistAccountRow | null;
   onOpenChange: (open: boolean) => void;
-  onSave: (accountId: string, tags: string[]) => void;
+  onSave: (threadsAccountId: string, tags: string[]) => void;
 }
 
 export function WatchlistTagsDialog({ open, account, onOpenChange, onSave }: WatchlistTagsDialogProps) {

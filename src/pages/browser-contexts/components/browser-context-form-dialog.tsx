@@ -57,7 +57,7 @@ interface BrowserContextFormDialogProps {
 }
 
 const DEFAULT_VALUES: BrowserContextFormValues = {
-  accountId: '',
+  threadsAccountId: '',
   accountName: '',
   userAgent: '',
   viewportWidth: 1280,
@@ -158,7 +158,7 @@ export function BrowserContextFormDialog({
       const record = contextQuery.data;
 
       reset({
-        accountId: record.accountId ?? '',
+        threadsAccountId: record.threadsAccountId ?? '',
         accountName: record.accountName ?? '',
         userAgent: record.userAgent ?? '',
         viewportWidth: record.viewportWidth ?? DEFAULT_VALUES.viewportWidth,
@@ -175,15 +175,15 @@ export function BrowserContextFormDialog({
     }
   }, [contextQuery.data, mode, open, reset]);
 
-  const handleAccountSelect = (accountId: string) => {
-    setValue('accountId', accountId, {
+  const handleAccountSelect = (threadsAccountId: string) => {
+    setValue('threadsAccountId', threadsAccountId, {
       shouldDirty: true,
       shouldTouch: true,
       shouldValidate: true,
     });
 
     const matchedOption = accountOptionsQuery.data?.find(
-      (option) => option.id === accountId,
+      (option) => option.id === threadsAccountId,
     );
 
     setValue('accountName', matchedOption?.name ?? '', {
@@ -309,7 +309,7 @@ export function BrowserContextFormDialog({
                 <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                   <FormField
                     control={form.control}
-                    name="accountId"
+                    name="threadsAccountId"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Account</FormLabel>

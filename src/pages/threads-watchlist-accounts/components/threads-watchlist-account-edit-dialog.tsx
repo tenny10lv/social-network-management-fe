@@ -42,7 +42,7 @@ import {
 } from '../api';
 
 interface ThreadsWatchlistAccountEditDialogProps {
-  accountId: string | null;
+  threadsAccountId: string | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -54,7 +54,7 @@ const DEFAULT_VALUES: ThreadsWatchlistAccountUpdateValues = {
 };
 
 export function ThreadsWatchlistAccountEditDialog({
-  accountId,
+  threadsAccountId,
   open,
   onOpenChange,
 }: ThreadsWatchlistAccountEditDialogProps) {
@@ -68,9 +68,9 @@ export function ThreadsWatchlistAccountEditDialog({
   const { reset } = form;
 
   const accountQuery = useQuery<ThreadsWatchlistAccountRecord, Error>({
-    queryKey: ['threadsWatchlistAccount', accountId],
-    queryFn: () => getThreadsWatchlistAccount(accountId as string),
-    enabled: open && Boolean(accountId),
+    queryKey: ['threadsWatchlistAccount', threadsAccountId],
+    queryFn: () => getThreadsWatchlistAccount(threadsAccountId as string),
+    enabled: open && Boolean(threadsAccountId),
   });
 
   const categoriesQuery = useQuery<CategoryOption[], Error>({
@@ -85,7 +85,7 @@ export function ThreadsWatchlistAccountEditDialog({
       return;
     }
 
-    if (!accountId) {
+    if (!threadsAccountId) {
       reset(DEFAULT_VALUES);
       return;
     }
@@ -101,18 +101,18 @@ export function ThreadsWatchlistAccountEditDialog({
       categoryId: account.categoryId ?? '',
       isActive: account.isActive ?? false,
     });
-  }, [accountId, accountQuery.data, open, reset]);
+  }, [threadsAccountId, accountQuery.data, open, reset]);
 
   const categoryOptions = useMemo(() => categoriesQuery.data ?? [], [categoriesQuery.data]);
 
   const mutation = useMutation({
     mutationFn: (values: ThreadsWatchlistAccountUpdateValues) => {
-      if (!accountId) {
+      if (!threadsAccountId) {
         throw new Error('No watchlist account selected.');
       }
 
       return updateThreadsWatchlistAccount({
-        id: accountId,
+        id: threadsAccountId,
         values: {
           note: values.note ?? '',
           categoryId: values.categoryId ?? '',
@@ -122,8 +122,8 @@ export function ThreadsWatchlistAccountEditDialog({
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['threadsWatchlistAccounts'] });
-      if (accountId) {
-        void queryClient.invalidateQueries({ queryKey: ['threadsWatchlistAccount', accountId] });
+      if (threadsAccountId) {
+        void queryClient.invalidateQueries({ queryKey: ['threadsWatchlistAccount', threadsAccountId] });
       }
       toast.custom(
         (t) => (
@@ -156,7 +156,7 @@ export function ThreadsWatchlistAccountEditDialog({
   const isSubmitting = mutation.isPending;
 
   const onSubmit = (values: ThreadsWatchlistAccountUpdateValues) => {
-    if (!accountId) {
+    if (!threadsAccountId) {
       return;
     }
 
@@ -183,7 +183,7 @@ export function ThreadsWatchlistAccountEditDialog({
           </DialogTitle>
         </DialogHeader>
         <DialogBody>
-          {open && !accountId ? (
+          {open && !threadsAccountId ? (
             <Alert variant="mono" icon="destructive">
               <AlertIcon>
                 <AlertCircle className="size-5" />
@@ -283,7 +283,7 @@ export function ThreadsWatchlistAccountEditDialog({
                       Cancel
                     </Button>
                   </DialogClose>
-                  <Button type="submit" disabled={isSubmitting || !accountId}>
+                  <Button type="submit" disabled={isSubmitting || !threadsAccountId}>
                     {isSubmitting && <LoaderCircle className="mr-2 size-4 animate-spin" />}
                     Save Changes
                   </Button>

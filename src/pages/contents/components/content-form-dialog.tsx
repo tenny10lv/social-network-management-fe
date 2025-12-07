@@ -71,7 +71,7 @@ const STATUS_OPTIONS = [
 ] as const;
 
 const DEFAULT_VALUES: ContentFormValues = {
-  accountId: '',
+  threadsAccountId: '',
   title: undefined,
   body: '',
   type: 'TEXT',
@@ -158,7 +158,7 @@ export function ContentFormDialog({ mode, contentId, open, onOpenChange }: Conte
       const record = contentQuery.data;
 
       reset({
-        accountId: record.accountId ?? '',
+        threadsAccountId: record.threadsAccountId ?? '',
         title: record.title ?? undefined,
         body: record.body ?? '',
         type: (record.type as ContentFormValues['type']) ?? 'TEXT',
@@ -315,7 +315,7 @@ export function ContentFormDialog({ mode, contentId, open, onOpenChange }: Conte
               <div className="grid gap-4 md:grid-cols-2">
                 <FormField
                   control={control}
-                  name="accountId"
+                  name="threadsAccountId"
                   render={({ field }) => (
                     <FormItem className="md:col-span-2">
                       <FormLabel>Account</FormLabel>

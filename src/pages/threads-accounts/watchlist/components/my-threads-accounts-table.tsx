@@ -29,8 +29,8 @@ const PAGE_SIZE_OPTIONS = [3, 5, 10];
 
 interface MyThreadsAccountsTableProps {
   accounts: MyThreadsAccount[];
-  onSetPrimary: (accountId: string) => void;
-  onToggleStatus: (accountId: string) => void;
+  onSetPrimary: (threadsAccountId: string) => void;
+  onToggleStatus: (threadsAccountId: string) => void;
 }
 
 export function MyThreadsAccountsTable({ accounts, onSetPrimary, onToggleStatus }: MyThreadsAccountsTableProps) {

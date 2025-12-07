@@ -549,7 +549,7 @@ export function ThreadsWatchlistAccountsModuleContent() {
       />
 
       <ThreadsWatchlistAccountEditDialog
-        accountId={selectedAccountId}
+        threadsAccountId={selectedAccountId}
         open={isEditOpen}
         onOpenChange={(open) => {
           setIsEditOpen(open);

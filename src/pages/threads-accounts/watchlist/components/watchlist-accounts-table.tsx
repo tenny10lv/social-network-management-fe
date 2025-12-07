@@ -66,10 +66,10 @@ interface WatchlistAccountsTableProps {
   onSearchQueryChange: (value: string) => void;
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
-  onSelectAccount: (accountId: string) => void;
+  onSelectAccount: (threadsAccountId: string) => void;
   onRequestEditTags: (account: WatchlistAccountRow) => void;
   onRequestRemove: (account: WatchlistAccountRow) => void;
-  onTriggerCrawl: (accountId: string) => void;
+  onTriggerCrawl: (threadsAccountId: string) => void;
   onRequestAddAccount: () => void;
   onRetry?: () => void;
 }

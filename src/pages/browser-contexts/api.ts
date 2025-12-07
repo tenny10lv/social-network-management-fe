@@ -21,7 +21,7 @@ const proxyUrlSchema = z
   .optional();
 
 export const browserContextFormSchema = z.object({
-  accountId: z.string().min(1, 'Account is required'),
+  threadsAccountId: z.string().min(1, 'Account is required'),
   accountName: z.string().min(1, 'Account name is required'),
   userAgent: z.string().min(1, 'User agent is required'),
   viewportWidth: z
@@ -46,7 +46,7 @@ export type BrowserContextFormValues = z.infer<typeof browserContextFormSchema>;
 
 export type BrowserContextRecord = {
   id: string;
-  accountId: string | null;
+  threadsAccountId: string | null;
   accountName: string;
   userAgent?: string | null;
   viewportWidth?: number | null;
@@ -182,8 +182,8 @@ const normalizeBrowserContextRecord = (record: any): BrowserContextRecord => {
 
   const account = record?.account ?? record?.accountInfo ?? record?.account_info ?? null;
 
-  const accountId =
-    record?.accountId ??
+  const threadsAccountId =
+    record?.threadsAccountId ??
     record?.account_id ??
     account?.id ??
     account?._id ??
@@ -200,7 +200,7 @@ const normalizeBrowserContextRecord = (record: any): BrowserContextRecord => {
 
   return {
     id: String(record?.id ?? record?.uuid ?? record?._id ?? ''),
-    accountId: accountId !== null && accountId !== undefined ? String(accountId) : null,
+    threadsAccountId: threadsAccountId !== null && threadsAccountId !== undefined ? String(threadsAccountId) : null,
     accountName: String(accountName ?? ''),
     userAgent: record?.userAgent ?? record?.user_agent ?? null,
     viewportWidth: toNumberOrNull(viewportWidth),
@@ -264,13 +264,13 @@ const normalizeListPayload = (
 export async function getBrowserContexts({
   page,
   limit,
-  accountId,
+  threadsAccountId,
   isActive,
   search,
 }: {
   page: number;
   limit: number;
-  accountId?: string;
+  threadsAccountId?: string;
   isActive?: boolean;
   search?: string;
 }): Promise<BrowserContextListResponse> {
@@ -279,8 +279,8 @@ export async function getBrowserContexts({
     limit: String(limit),
   });
 
-  if (accountId) {
-    params.set('accountId', accountId);
+  if (threadsAccountId) {
+    params.set('threadsAccountId', threadsAccountId);
   }
 
   if (typeof isActive === 'boolean') {
@@ -328,7 +328,7 @@ const parseJsonFieldForSubmit = (value?: string | null) => {
 
 const mapFormValuesToPayload = (values: BrowserContextFormValues) => {
   const payload: Record<string, unknown> = {
-    accountId: values.accountId,
+    threadsAccountId: values.threadsAccountId,
     accountName: values.accountName,
     userAgent: values.userAgent,
     viewportWidth: values.viewportWidth,
@@ -440,7 +440,7 @@ export async function getAccountOptions(): Promise<BrowserContextAccountOption[]
   return rawItems
     .map((item: any) => {
       const id =
-        item?.id ?? item?._id ?? item?.uuid ?? item?.accountId ?? item?.account_id ?? null;
+        item?.id ?? item?._id ?? item?.uuid ?? item?.threadsAccountId ?? item?.account_id ?? null;
       const name =
         item?.accountName ??
         item?.name ??

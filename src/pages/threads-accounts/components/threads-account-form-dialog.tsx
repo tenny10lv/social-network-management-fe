@@ -59,7 +59,7 @@ import { cn } from '@/lib/utils';
 
 interface ThreadsAccountFormDialogProps {
   mode: 'create' | 'edit';
-  accountId?: string | null;
+  threadsAccountId?: string | null;
   account?: ThreadsAccountRecord | null;
   initialValues: ThreadsAccountFormValues;
   proxyOptions: ProxyOption[];
@@ -92,7 +92,7 @@ const sanitizeIds = (values?: (string | null | undefined)[] | null) =>
 
 export function ThreadsAccountFormDialog({
   mode,
-  accountId,
+  threadsAccountId,
   account,
   initialValues,
   proxyOptions,
@@ -221,7 +221,7 @@ export function ThreadsAccountFormDialog({
   const updateMutation = useMutation({
     mutationFn: (values: ThreadsAccountFormValues) =>
       updateThreadsAccount({
-        id: accountId as string,
+        id: threadsAccountId as string,
         data: values,
       }),
     onSuccess: () => {

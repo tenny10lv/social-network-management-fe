@@ -50,7 +50,7 @@ interface PublishJobFormDialogProps {
 }
 
 const DEFAULT_VALUES: PublishJobFormValues = {
-  accountId: '',
+  threadsAccountId: '',
   contentId: '',
   scheduledAt: '',
 };
@@ -124,7 +124,7 @@ export function PublishJobFormDialog({ open, onOpenChange }: PublishJobFormDialo
 
   const onSubmit = (values: PublishJobFormValues) => {
     createMutation.mutate({
-      accountId: values.accountId,
+      threadsAccountId: values.threadsAccountId,
       contentId: values.contentId,
       scheduledAt: values.scheduledAt || undefined,
     });
@@ -145,7 +145,7 @@ export function PublishJobFormDialog({ open, onOpenChange }: PublishJobFormDialo
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <FormField
                 control={control}
-                name="accountId"
+                name="threadsAccountId"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Account</FormLabel>

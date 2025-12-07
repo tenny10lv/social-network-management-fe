@@ -8,7 +8,7 @@ import {
 } from '@/lib/api';
 
 export const publishJobFormSchema = z.object({
-  accountId: z.string().min(1, 'Account is required'),
+  threadsAccountId: z.string().min(1, 'Account is required'),
   contentId: z.string().min(1, 'Content is required'),
   scheduledAt: z.string().optional().or(z.literal('')),
 });
@@ -16,14 +16,14 @@ export const publishJobFormSchema = z.object({
 export type PublishJobFormValues = z.infer<typeof publishJobFormSchema>;
 
 export type PublishJobSubmitPayload = {
-  accountId: string;
+  threadsAccountId: string;
   contentId: string;
   scheduledAt?: string | null;
 };
 
 export type PublishJobRecord = {
   id: string;
-  accountId?: string | null;
+  threadsAccountId?: string | null;
   accountName?: string | null;
   contentId?: string | null;
   contentTitle?: string | null;
@@ -122,8 +122,8 @@ const normalizePublishJobRecord = (record: any): PublishJobRecord => {
   const account = record?.account ?? record?.accountInfo ?? record?.account_info ?? null;
   const content = record?.content ?? record?.contentInfo ?? record?.content_info ?? null;
 
-  const accountId =
-    record?.accountId ??
+  const threadsAccountId =
+    record?.threadsAccountId ??
     record?.account_id ??
     account?.id ??
     account?._id ??
@@ -172,7 +172,7 @@ const normalizePublishJobRecord = (record: any): PublishJobRecord => {
 
   return {
     id: String(record?.id ?? record?._id ?? record?.uuid ?? ''),
-    accountId: accountId ? String(accountId) : null,
+    threadsAccountId: threadsAccountId ? String(threadsAccountId) : null,
     accountName: accountName ? String(accountName) : null,
     contentId: contentId ? String(contentId) : null,
     contentTitle: contentTitle ? String(contentTitle) : null,
@@ -275,7 +275,7 @@ export async function createPublishJob(
   data: PublishJobSubmitPayload,
 ): Promise<PublishJobRecord> {
   const payload: PublishJobSubmitPayload = {
-    accountId: data.accountId,
+    threadsAccountId: data.threadsAccountId,
     contentId: data.contentId,
     scheduledAt: toIsoOrNull(data.scheduledAt ?? undefined) ?? undefined,
   };

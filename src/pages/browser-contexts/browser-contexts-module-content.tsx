@@ -149,7 +149,7 @@ export function BrowserContextsModuleContent() {
       {
         page,
         limit,
-        accountId: selectedAccountId,
+        threadsAccountId: selectedAccountId,
         isActive: showActiveOnly ? true : null,
         search: debouncedSearch || null,
       },
@@ -158,7 +158,7 @@ export function BrowserContextsModuleContent() {
       getBrowserContexts({
         page,
         limit,
-        accountId: selectedAccountId ?? undefined,
+        threadsAccountId: selectedAccountId ?? undefined,
         isActive: showActiveOnly ? true : undefined,
         search: debouncedSearch || undefined,
       }),

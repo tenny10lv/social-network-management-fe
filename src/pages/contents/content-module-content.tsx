@@ -287,7 +287,7 @@ export function ContentModuleContent() {
               ) : (
                 records.map((content) => {
                   const accountLabel =
-                    accountLookup[content.accountId] ?? content.accountName ?? '—';
+                    accountLookup[content.threadsAccountId] ?? content.accountName ?? '—';
 
                   return (
                     <TableRow key={content.id}>

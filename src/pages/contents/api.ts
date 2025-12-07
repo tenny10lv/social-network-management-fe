@@ -8,7 +8,7 @@ import {
 } from '@/lib/api';
 
 export const contentFormSchema = z.object({
-  accountId: z.string().min(1, 'Account is required'),
+  threadsAccountId: z.string().min(1, 'Account is required'),
   title: z
     .string()
     .max(200, 'Title must be 200 characters or fewer')
@@ -24,7 +24,7 @@ export type ContentFormValues = z.infer<typeof contentFormSchema>;
 
 export type ContentRecord = {
   id: string;
-  accountId: string;
+  threadsAccountId: string;
   accountName?: string | null;
   title?: string | null;
   body?: string | null;
@@ -157,8 +157,8 @@ const normalizeContentRecord = (record: any): ContentRecord => {
 
   return {
     id: String(record?.id ?? record?._id ?? record?.uuid ?? ''),
-    accountId: String(
-      record?.accountId ?? record?.account_id ?? record?.account?.id ?? record?.account?.uuid ?? '',
+    threadsAccountId: String(
+      record?.threadsAccountId ?? record?.account_id ?? record?.account?.id ?? record?.account?.uuid ?? '',
     ),
     accountName:
       record?.accountName ??
@@ -244,7 +244,7 @@ export async function getContent(id: string): Promise<ContentRecord> {
 const mapToFormData = (data: ContentSubmitPayload): FormData => {
   const formData = new FormData();
 
-  formData.append('accountId', data.accountId);
+  formData.append('threadsAccountId', data.threadsAccountId);
   formData.append('body', data.body);
   formData.append('type', data.type);
   formData.append('status', data.status);

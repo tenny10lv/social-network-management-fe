@@ -265,8 +265,8 @@ export function WatchlistModuleContent({ threadsAccountId }: WatchlistModuleCont
     [publishingTasks, scheduleState],
   );
 
-  const handleSelectAccount = useCallback((accountId: string) => {
-    setSelectedAccountId(accountId);
+  const handleSelectAccount = useCallback((threadsAccountId: string) => {
+    setSelectedAccountId(threadsAccountId);
   }, []);
 
   const handleRequestAddAccount = useCallback(() => {
@@ -285,23 +285,23 @@ export function WatchlistModuleContent({ threadsAccountId }: WatchlistModuleCont
     [queryClient],
   );
 
-  const handleUpdateTags = useCallback((accountId: string, tags: string[]) => {
+  const handleUpdateTags = useCallback((threadsAccountId: string, tags: string[]) => {
     setWatchlistAccounts((previous) =>
-      previous.map((account) => (account.id === accountId ? { ...account, tags } : account)),
+      previous.map((account) => (account.id === threadsAccountId ? { ...account, tags } : account)),
     );
     setTagEditorAccount(null);
   }, []);
 
   const handleTriggerCrawl = useCallback(
-    (accountId: string) => {
+    (threadsAccountId: string) => {
       const now = new Date().toISOString();
       setWatchlistAccounts((previous) =>
-        previous.map((account) => (account.id === accountId ? { ...account, lastCrawledAt: now } : account)),
+        previous.map((account) => (account.id === threadsAccountId ? { ...account, lastCrawledAt: now } : account)),
       );
 
       const newPost: CrawledPost = {
         id: createId(),
-        watchlistAccountId: accountId,
+        watchlistAccountId: threadsAccountId,
         content:
           'Automated crawl detected a trending thread. Summarize insights and confirm if we should spin an owned response.',
         capturedAt: now,
@@ -327,14 +327,14 @@ export function WatchlistModuleContent({ threadsAccountId }: WatchlistModuleCont
       return;
     }
 
-    const accountId = accountPendingRemoval.id;
-    const remainingAccountId = watchlistAccounts.find((account) => account.id !== accountId)?.id ?? null;
+    const threadsAccountId = accountPendingRemoval.id;
+    const remainingAccountId = watchlistAccounts.find((account) => account.id !== threadsAccountId)?.id ?? null;
 
-    setWatchlistAccounts((previous) => previous.filter((account) => account.id !== accountId));
-    setCrawledPosts((previous) => previous.filter((post) => post.watchlistAccountId !== accountId));
-    setPublishingTasks((previous) => previous.filter((task) => task.watchlistAccountId !== accountId));
+    setWatchlistAccounts((previous) => previous.filter((account) => account.id !== threadsAccountId));
+    setCrawledPosts((previous) => previous.filter((post) => post.watchlistAccountId !== threadsAccountId));
+    setPublishingTasks((previous) => previous.filter((task) => task.watchlistAccountId !== threadsAccountId));
 
-    if (selectedAccountId === accountId) {
+    if (selectedAccountId === threadsAccountId) {
       setSelectedAccountId(remainingAccountId);
     }
 

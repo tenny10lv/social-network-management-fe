@@ -439,7 +439,7 @@ export function ThreadsAccountsModuleContent() {
   });
 
   const prepareFormDialog = useCallback(
-    async (mode: 'create' | 'edit', accountId?: string | null) => {
+    async (mode: 'create' | 'edit', threadsAccountId?: string | null) => {
       setIsFormPreparing(true);
 
       try {
@@ -456,10 +456,10 @@ export function ThreadsAccountsModuleContent() {
           queryFn: getWatchlistAccountOptions,
         });
         const accountPromise =
-          mode === 'edit' && accountId
+          mode === 'edit' && threadsAccountId
             ? queryClient.fetchQuery<ThreadsAccountRecord>({
-                queryKey: ['threadsAccount', accountId],
-                queryFn: () => getThreadsAccount(accountId as string),
+                queryKey: ['threadsAccount', threadsAccountId],
+                queryFn: () => getThreadsAccount(threadsAccountId as string),
                 staleTime: 0,
               })
             : Promise.resolve<ThreadsAccountRecord | null>(null);
@@ -499,7 +499,7 @@ export function ThreadsAccountsModuleContent() {
         setFormAccount(accountRecord);
         setFormInitialValues(nextInitialValues);
         setFormMode(mode);
-        setSelectedAccountId(mode === 'edit' ? accountId ?? null : null);
+        setSelectedAccountId(mode === 'edit' ? threadsAccountId ?? null : null);
         setFormInstanceKey((prev) => prev + 1);
         setIsFormOpen(true);
       } catch (error) {
@@ -672,8 +672,8 @@ export function ThreadsAccountsModuleContent() {
     }
   };
 
-  const handleOpenWatchlist = (accountId: string) => {
-    navigate(`/threads-accounts/watchlist/${accountId}`);
+  const handleOpenWatchlist = (threadsAccountId: string) => {
+    navigate(`/threads-accounts/watchlist/${threadsAccountId}`);
   };
 
   const handlePreviousPage = () => {
@@ -934,7 +934,7 @@ export function ThreadsAccountsModuleContent() {
         <ThreadsAccountFormDialog
           key={formInstanceKey}
           mode={formMode}
-          accountId={selectedAccountId}
+          threadsAccountId={selectedAccountId}
           account={formAccount}
           initialValues={formInitialValues}
           proxyOptions={formProxyOptions}
