@@ -15,7 +15,8 @@ import { WatchlistModuleContent } from './watchlist-module-content';
 
 export function WatchlistModulePage() {
   const { settings } = useSettings();
-  const { threadsAccountId } = useParams<{ threadsAccountId?: string }>();
+  const params = useParams<{ threadsAccountId?: string; id?: string }>();
+  const threadsAccountId = params.threadsAccountId ?? params.id;
   const navigate = useNavigate();
   const isDemoLayout = settings?.layout === 'demo1';
 

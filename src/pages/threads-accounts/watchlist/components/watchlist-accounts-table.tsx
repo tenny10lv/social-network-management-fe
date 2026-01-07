@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
-import { AlertTriangle, EllipsisVertical, RefreshCw, Search, Tag, X, Plus } from 'lucide-react';
+import { AlertTriangle, EllipsisVertical, Loader2, RefreshCw, Search, Tag, X, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -63,13 +63,14 @@ interface WatchlistAccountsTableProps {
   isLoading?: boolean;
   errorMessage?: string | null;
   pageSizeOptions?: number[];
+  crawlingAccountIds?: Set<string>;
   onSearchQueryChange: (value: string) => void;
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
   onSelectAccount: (threadsAccountId: string) => void;
   onRequestEditTags: (account: WatchlistAccountRow) => void;
   onRequestRemove: (account: WatchlistAccountRow) => void;
-  onTriggerCrawl: (threadsAccountId: string) => void;
+  onTriggerCrawl: (threadsAccountId: string) => Promise<void> | void;
   onRequestAddAccount: () => void;
   onRetry?: () => void;
 }
@@ -85,6 +86,7 @@ export function WatchlistAccountsTable({
   isLoading,
   errorMessage,
   pageSizeOptions = DEFAULT_PAGE_SIZE_OPTIONS,
+  crawlingAccountIds,
   onSearchQueryChange,
   onPageChange,
   onPageSizeChange,
@@ -213,6 +215,7 @@ export function WatchlistAccountsTable({
                 currentRecords.map((account) => {
                   const fallbackInitials = (account.displayName || account.handle || account.id).slice(0, 2).toUpperCase();
                   const profileUrl = buildThreadsProfileUrl(account.username);
+                  const isCrawling = crawlingAccountIds?.has(account.id);
 
                   return (
                     <TableRow
@@ -282,9 +285,13 @@ export function WatchlistAccountsTable({
                             <DropdownMenuItem onClick={() => onSelectAccount(account.id)}>
                               View pipeline
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => onTriggerCrawl(account.id)}>
-                              <RefreshCw className="mr-2 size-4" />
-                              Trigger crawl
+                            <DropdownMenuItem onClick={() => onTriggerCrawl(account.id)} disabled={Boolean(isCrawling)}>
+                              {isCrawling ? (
+                                <Loader2 className="mr-2 size-4 animate-spin" />
+                              ) : (
+                                <RefreshCw className="mr-2 size-4" />
+                              )}
+                              {isCrawling ? 'Crawling...' : 'Trigger crawl'}
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => onRequestEditTags(account)}>
                               <Tag className="mr-2 size-4" />

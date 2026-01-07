@@ -6,10 +6,8 @@ import { useNavigate } from 'react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { RiCheckboxCircleFill } from '@remixicon/react';
 import {
-  AlertTriangle,
   Eye,
   EllipsisVertical,
-  ListChecks,
   LoaderCircle,
   LogIn,
   Pencil,
@@ -52,10 +50,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { TableLoadingState } from '@/components/ui/table-loading-state';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { buildThreadsProfileUrl } from '@/lib/threads';
 import {
   ThreadsAccountRecord,
@@ -71,9 +67,6 @@ import {
   type CategoryOption,
   type WatchlistAccountOption,
   type ThreadsAccountLoginResponse,
-  type ThreadsSessionModeFailureResult,
-  type ThreadsSessionModeResult,
-  type ThreadsSessionModeSuccessResult,
 } from './api';
 import { ThreadsAccountFormDialog, DEFAULT_VALUES } from './components/threads-account-form-dialog';
 
@@ -89,276 +82,6 @@ const sanitizeId = (value?: string | null) => {
 
 const sanitizeIds = (values?: (string | null | undefined)[] | null) =>
   Array.isArray(values) ? values.map((value) => sanitizeId(value)).filter(Boolean) : [];
-
-const formatSessionModeLabel = (value?: string | null) => {
-  if (!value) {
-    return 'Unknown';
-  }
-
-  const trimmed = value.trim();
-
-  if (!trimmed) {
-    return 'Unknown';
-  }
-
-  return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
-};
-
-const formatSessionTimestamp = (value?: string | null) => {
-  if (!value) {
-    return 'Unknown time';
-  }
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  const pad = (input: number) => String(input).padStart(2, '0');
-  const year = date.getFullYear();
-  const month = pad(date.getMonth() + 1);
-  const day = pad(date.getDate());
-  const hours = pad(date.getHours());
-  const minutes = pad(date.getMinutes());
-  const seconds = pad(date.getSeconds());
-
-  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-};
-
-const formatFailureReason = (reason?: string | null, fallback?: string | null) => {
-  const normalizedReason = reason?.trim();
-
-  if (normalizedReason) {
-    return normalizedReason;
-  }
-
-  const normalizedFallback = fallback?.trim();
-
-  if (normalizedFallback) {
-    return normalizedFallback;
-  }
-
-  return 'Unknown reason';
-};
-
-const formatErrorMessage = (value?: string | null) => value?.trim() || 'Not provided';
-
-const sortResultsByTimestampDesc = <T extends { lastLoggedInAt?: string | null }>(results: T[]) =>
-  [...results].sort((a, b) => {
-    const aTime = a?.lastLoggedInAt ? Date.parse(a.lastLoggedInAt) : Number.NaN;
-    const bTime = b?.lastLoggedInAt ? Date.parse(b.lastLoggedInAt) : Number.NaN;
-
-    if (Number.isNaN(aTime) && Number.isNaN(bTime)) {
-      return 0;
-    }
-
-    if (Number.isNaN(aTime)) {
-      return 1;
-    }
-
-    if (Number.isNaN(bTime)) {
-      return -1;
-    }
-
-    return bTime - aTime;
-  });
-
-const SuccessResultsPopover = ({ results }: { results: ThreadsSessionModeSuccessResult[] }) => {
-  if (!results || results.length <= 1) {
-    return null;
-  }
-
-  const ordered = sortResultsByTimestampDesc(results);
-
-  return (
-    <Popover>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <PopoverTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-7 text-muted-foreground hover:text-foreground"
-              aria-label="View login history"
-            >
-              <ListChecks className="size-4" />
-            </Button>
-          </PopoverTrigger>
-        </TooltipTrigger>
-        <TooltipContent>View all login attempts</TooltipContent>
-      </Tooltip>
-      <PopoverContent className="w-80">
-        <div className="space-y-2">
-          <p className="text-sm font-semibold">Login history</p>
-          <div className="max-h-64 space-y-2 overflow-y-auto pr-1">
-            {ordered.map((result, index) => (
-              <div key={`success-${index}`} className="rounded-md border border-border p-2 text-xs">
-                <p className="font-medium text-foreground">{formatSessionModeLabel(result.sessionMode)}</p>
-                <dl className="mt-1 space-y-0.5 text-muted-foreground">
-                  <div className="flex items-center justify-between gap-2">
-                    <dt>Last logged in</dt>
-                    <dd className="text-right font-medium text-foreground">
-                      {formatSessionTimestamp(result.lastLoggedInAt)}
-                    </dd>
-                  </div>
-                  {result.reason ? (
-                    <div className="flex items-center justify-between gap-2">
-                      <dt>Reason</dt>
-                      <dd className="text-right text-foreground">{result.reason}</dd>
-                    </div>
-                  ) : null}
-                </dl>
-              </div>
-            ))}
-          </div>
-        </div>
-      </PopoverContent>
-    </Popover>
-  );
-};
-
-const FailureResultsPopover = ({ results }: { results: ThreadsSessionModeFailureResult[] }) => {
-  if (!results || results.length === 0) {
-    return null;
-  }
-
-  const ordered = sortResultsByTimestampDesc(results);
-
-  return (
-    <Popover>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <PopoverTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-7 text-destructive hover:text-destructive"
-              aria-label="View failure details"
-            >
-              <AlertTriangle className="size-4" />
-            </Button>
-          </PopoverTrigger>
-        </TooltipTrigger>
-        <TooltipContent>View failure details</TooltipContent>
-      </Tooltip>
-      <PopoverContent className="w-96">
-        <div className="space-y-2">
-          <p className="text-sm font-semibold text-destructive">Failure history</p>
-          <div className="max-h-64 space-y-2 overflow-y-auto pr-1">
-            {ordered.map((result, index) => (
-              <div key={`failure-${index}`} className="rounded-md border border-border p-2 text-xs">
-                <p className="font-medium text-foreground">{formatSessionModeLabel(result.sessionMode)}</p>
-                <dl className="mt-1 space-y-0.5 text-muted-foreground">
-                  <div className="flex items-center justify-between gap-2">
-                    <dt>Last logged in</dt>
-                    <dd className="text-right font-medium text-foreground">
-                      {formatSessionTimestamp(result.lastLoggedInAt)}
-                    </dd>
-                  </div>
-                  <div className="flex items-center justify-between gap-2">
-                    <dt>Reason</dt>
-                    <dd className="text-right text-foreground">
-                      {formatFailureReason(result.reason)}
-                    </dd>
-                  </div>
-                  <div className="flex items-center justify-between gap-2">
-                    <dt>Error</dt>
-                    <dd className="text-right text-foreground">
-                      {formatErrorMessage(result.failureInfo?.errorMessage)}
-                    </dd>
-                  </div>
-                </dl>
-              </div>
-            ))}
-          </div>
-        </div>
-      </PopoverContent>
-    </Popover>
-  );
-};
-
-type SessionBadgeLabel = {
-  primary: string;
-  secondary: string;
-};
-
-const buildSuccessEntryLabel = (result: ThreadsSessionModeSuccessResult): SessionBadgeLabel => ({
-  primary: formatSessionModeLabel(result.sessionMode),
-  secondary: formatSessionTimestamp(result.lastLoggedInAt),
-});
-
-const buildFailureEntryLabel = (result: ThreadsSessionModeFailureResult): SessionBadgeLabel => ({
-  primary: formatSessionModeLabel(result.sessionMode),
-  secondary: formatFailureReason(result.reason, result.failureInfo?.errorMessage),
-});
-
-const SessionModeCell = ({ sessionMode }: { sessionMode?: ThreadsSessionModeResult | null }) => {
-  const successResults = sessionMode?.successResults ?? [];
-  const failureResults = sessionMode?.failureResults ?? [];
-  const hasSuccess = successResults.length > 0;
-  const hasFailure = failureResults.length > 0;
-
-  if (!hasSuccess && !hasFailure) {
-    return (
-      <Badge variant="secondary" appearance="light" className="max-w-[260px] text-left">
-        <span className="text-xs font-medium text-muted-foreground">No session data</span>
-      </Badge>
-    );
-  }
-
-  const orderedSuccess = sortResultsByTimestampDesc(successResults);
-  const orderedFailure = sortResultsByTimestampDesc(failureResults);
-
-  const successBadges = orderedSuccess.map((result, index) => {
-    const label = buildSuccessEntryLabel(result);
-
-    return (
-      <Badge key={`session-success-${index}`} variant="success" appearance="light" className="max-w-[260px] text-left">
-        <span className="text-xs leading-tight">
-          <span className="font-semibold">{label.primary}</span>
-          <span className="text-muted-foreground"> - {label.secondary}</span>
-        </span>
-      </Badge>
-    );
-  });
-
-  const failureBadges = orderedFailure.map((result, index) => {
-    const label = buildFailureEntryLabel(result);
-
-    return (
-      <Badge
-        key={`session-failure-${index}`}
-        variant="destructive"
-        appearance="light"
-        className="max-w-[260px] text-left"
-      >
-        <span className="text-xs leading-tight">
-          <span className="font-semibold">{label.primary}</span>
-          <span className="text-muted-foreground"> - {label.secondary}</span>
-        </span>
-      </Badge>
-    );
-  });
-
-  const showSuccessHistory = successResults.length > 1;
-  const showFailureHistory = hasFailure;
-
-  return (
-    <div className="flex items-start gap-1.5">
-      <div className="flex flex-col gap-1">
-        {successBadges}
-        {failureBadges}
-      </div>
-      {(showSuccessHistory || showFailureHistory) && (
-        <div className="flex flex-col gap-1">
-          {showSuccessHistory && <SuccessResultsPopover results={successResults} />}
-          {showFailureHistory && <FailureResultsPopover results={failureResults} />}
-        </div>
-      )}
-    </div>
-  );
-};
 
 const formatDate = (value?: string | null) => {
   if (!value) {
@@ -378,6 +101,16 @@ const formatDate = (value?: string | null) => {
     hour: '2-digit',
     minute: '2-digit',
   }).format(date);
+};
+
+const formatLastLogin = (value?: string | null) => {
+  if (!value) {
+    return 'No login data';
+  }
+
+  const formatted = formatDate(value);
+
+  return formatted === '—' ? 'No login data' : formatted;
 };
 
 const getStatusBadge = (record: ThreadsAccountRecord) => {
@@ -751,7 +484,7 @@ export function ThreadsAccountsModuleContent() {
                 <TableHead>Username</TableHead>
                 <TableHead>Proxy</TableHead>
                 <TableHead>Category</TableHead>
-                <TableHead>Session Mode</TableHead>
+                <TableHead>Last Login</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Created</TableHead>
                 <TableHead>Updated</TableHead>
@@ -816,7 +549,7 @@ export function ThreadsAccountsModuleContent() {
                       <TableCell>{account.proxyName ?? account.proxyId ?? '—'}</TableCell>
                       <TableCell>{account.categoryName ?? account.categoryId ?? '—'}</TableCell>
                       <TableCell>
-                        <SessionModeCell sessionMode={account.sessionMode} />
+                        {formatLastLogin(account.lastLoginAt)}
                       </TableCell>
                       <TableCell>{getStatusBadge(account)}</TableCell>
                       <TableCell>{formatDate(account.createdAt)}</TableCell>

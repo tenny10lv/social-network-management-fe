@@ -4,10 +4,12 @@ import type { WatchlistAccount, WatchlistAccountsResponse } from './types';
 const WATCHLIST_ACCOUNTS_ENDPOINT = 'threads/watchlist/accounts';
 const WATCHLIST_ACCOUNTS_BY_THREADS_ACCOUNT_ENDPOINT = 'threads/watchlist/accounts/by-threads-account';
 const THREAD_CATEGORIES_ENDPOINT = 'categories';
+const THREADS_CRAWL_ENDPOINT = 'threads/posts/crawl-watchlist-account';
 
 const DEFAULT_ERROR_MESSAGE = 'Failed to add watchlist account. Please try again.';
 const DEFAULT_LIST_ERROR_MESSAGE = 'Failed to load watchlist accounts. Please try again.';
 const DEFAULT_CATEGORY_ERROR_MESSAGE = 'Failed to load categories. Please try again.';
+const DEFAULT_TRIGGER_CRAWL_ERROR_MESSAGE = 'Failed to trigger crawl. Please try again.';
 
 type CreateWatchlistAccountArgs = {
   username: string;
@@ -17,6 +19,11 @@ type CreateWatchlistAccountArgs = {
 export type ThreadCategory = {
   id: string;
   name: string;
+};
+
+export type CrawlJob = {
+  jobId: string;
+  status: string;
 };
 
 export const THREAD_CATEGORIES_QUERY_KEY = ['threads', 'categories'] as const;
@@ -164,6 +171,25 @@ const normalizeDateValue = (value: unknown): string | null => {
   }
 
   return new Date(timestamp).toISOString();
+};
+
+const normalizeCrawlJob = (value: unknown): CrawlJob | null => {
+  if (!value || typeof value !== 'object') {
+    return null;
+  }
+
+  const record = value as Record<string, unknown>;
+  const source =
+    record.data && typeof record.data === 'object' ? (record.data as Record<string, unknown>) : record;
+
+  const jobId = normalizeString(source.jobId ?? source.id ?? source.job_id);
+  const status = normalizeString(source.status ?? source.state);
+
+  if (!jobId || !status) {
+    return null;
+  }
+
+  return { jobId, status };
 };
 
 const normalizeWatchlistAccount = (value: unknown): WatchlistAccount | null => {
@@ -414,4 +440,54 @@ export async function createWatchlistAccount({ username, categoryId }: CreateWat
   }
 
   return (data as Record<string, unknown> | null)?.data ?? data ?? { username: trimmed };
+}
+
+export async function triggerCrawl(threadsWatchlistAccountId: string): Promise<CrawlJob> {
+  const sanitizedThreadsWatchlistAccountId = threadsWatchlistAccountId.trim();
+
+  if (!sanitizedThreadsWatchlistAccountId) {
+    throw new Error('Watchlist account id is required to trigger a crawl.');
+  }
+
+  let response: Response;
+
+  try {
+    response = await fetch(buildApiUrl(THREADS_CRAWL_ENDPOINT), {
+      method: 'POST',
+      headers: {
+        accept: 'application/json',
+        'content-type': 'application/json',
+        'x-custom-lang': 'en',
+      },
+      body: JSON.stringify({ threadsWatchlistAccountId: sanitizedThreadsWatchlistAccountId }),
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : DEFAULT_TRIGGER_CRAWL_ERROR_MESSAGE;
+    throw new Error(message);
+  }
+
+  const text = await response.text();
+  let payload: unknown = null;
+
+  if (text) {
+    try {
+      payload = JSON.parse(text);
+    } catch {
+      throw new Error('Invalid server response.');
+    }
+  }
+
+  if (!response.ok) {
+    const message = extractErrorMessage(payload) ?? DEFAULT_TRIGGER_CRAWL_ERROR_MESSAGE;
+    throw new Error(message);
+  }
+
+  const job = normalizeCrawlJob(payload);
+
+  if (!job) {
+    throw new Error('Invalid server response.');
+  }
+
+  return job;
 }

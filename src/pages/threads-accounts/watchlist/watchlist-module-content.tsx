@@ -2,6 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { RiCheckboxCircleFill } from '@remixicon/react';
+import { AlertCircle } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,12 +15,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Alert, AlertIcon, AlertTitle } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  CRAWLED_POSTS,
-  MY_THREADS_ACCOUNTS,
-  PUBLISHING_TASKS,
-} from './mock-data';
+import { MY_THREADS_ACCOUNTS } from './mock-data';
 import {
   CrawledPost,
   MyThreadsAccount,
@@ -26,14 +26,15 @@ import {
   WatchlistAccountRow,
 } from './types';
 import { WatchlistAccountsTable } from './components/watchlist-accounts-table';
-import { CrawledPostsPanel } from './components/crawled-posts-panel';
 import { ScheduledPostsPanel } from './components/scheduled-posts-panel';
 import { PublishedHistoryPanel } from './components/published-history-panel';
 import { PostEditorDialog } from './components/post-editor-dialog';
 import { SchedulePostDialog } from './components/schedule-post-dialog';
 import { WatchlistTagsDialog } from './components/watchlist-tags-dialog';
 import { AddWatchlistAccountDialog } from './components/add-watchlist-account-dialog';
-import { getWatchlistAccountsByThreadsAccount } from './api';
+import { getWatchlistAccountsByThreadsAccount, triggerCrawl } from './api';
+import { ThreadsCrawledPostsTable } from './components/threads-crawled-posts-table';
+import { THREAD_POSTS_QUERY_KEY, ThreadPost, ThreadsPostType, getThreadPosts } from './posts-api';
 
 const createId = () =>
   typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
@@ -57,6 +58,7 @@ const buildDisplayNameFromUsername = (value: string) => {
 };
 
 const TABLE_PAGE_SIZE_OPTIONS = [5, 10, 20];
+const THREAD_POSTS_PAGE_SIZE_OPTIONS = [10, 20, 50];
 
 const pickValidDateValue = (candidates: (string | null | undefined)[]) => {
   for (const candidate of candidates) {
@@ -103,6 +105,59 @@ const deriveTags = (record: WatchlistAccount) => {
   return [] as string[];
 };
 
+const deriveMediaTypeFromPost = (post: ThreadPost): CrawledPost['mediaType'] => {
+  if (post.videoMediaItems.length > 0) {
+    return 'video';
+  }
+
+  if (post.imageMediaItems.length > 0) {
+    return 'image';
+  }
+
+  return 'text';
+};
+
+const derivePostContent = (post: ThreadPost) => {
+  if (post.caption) {
+    return post.caption;
+  }
+
+  if (post.textFragments.length > 0) {
+    return post.textFragments.join(' ');
+  }
+
+  return post.code ?? post.postId ?? post.pk ?? post.id;
+};
+
+const mapThreadPostToCrawledPost = (post: ThreadPost, fallbackWatchlistId: string): CrawledPost => ({
+  id: post.id,
+  watchlistAccountId: post.threadsWatchlistAccountId ?? fallbackWatchlistId,
+  content: derivePostContent(post),
+  capturedAt: post.takenAt ?? post.createdAt ?? new Date().toISOString(),
+  language: 'en',
+  topics: post.mentions,
+  mediaType: deriveMediaTypeFromPost(post),
+  images: post.imageMediaItems.map((item) => ({
+    src: item.thumbnailUrl ?? item.previewUrl ?? item.url,
+    full: item.url,
+    alt: item.type ?? undefined,
+  })),
+  videos: post.videoMediaItems.map((item) => ({
+    src: item.url,
+    thumbnail: item.thumbnailUrl ?? item.previewUrl ?? undefined,
+    title: item.type ?? undefined,
+  })),
+  status: 'ready',
+  scheduledFor: undefined,
+  publishedAt: post.createdAt ?? undefined,
+  targetAccountId: undefined,
+  sentiment: 'neutral',
+  likes: post.likeCount,
+  replies: 0,
+  reposts: 0,
+  editorNotes: post.captionIsEdited ? 'Caption edited' : undefined,
+});
+
 const mapWatchlistAccountToRow = (record: WatchlistAccount): WatchlistAccountRow => {
   const username = sanitizeUsername(record.username);
   const handle = username ? `@${username}` : record.username || '—';
@@ -140,19 +195,28 @@ export function WatchlistModuleContent({ threadsAccountId }: WatchlistModuleCont
   const queryClient = useQueryClient();
   const [watchlistAccounts, setWatchlistAccounts] = useState<WatchlistAccountRow[]>([]);
   const [myAccounts] = useState<MyThreadsAccount[]>(MY_THREADS_ACCOUNTS);
-  const [crawledPosts, setCrawledPosts] = useState<CrawledPost[]>(CRAWLED_POSTS);
-  const [publishingTasks, setPublishingTasks] = useState<PublishingTask[]>(PUBLISHING_TASKS);
+  const [crawledPosts, setCrawledPosts] = useState<CrawledPost[]>([]);
+  const [publishingTasks, setPublishingTasks] = useState<PublishingTask[]>([]);
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'crawled' | 'scheduled' | 'published'>('crawled');
   const [tagEditorAccount, setTagEditorAccount] = useState<WatchlistAccountRow | null>(null);
   const [editorState, setEditorState] = useState<{ postId: string; intent: 'edit' | 'publish' } | null>(null);
   const [scheduleState, setScheduleState] = useState<{ postId: string; taskId?: string } | null>(null);
   const [accountPendingRemoval, setAccountPendingRemoval] = useState<WatchlistAccountRow | null>(null);
+  const [crawlingAccountIds, setCrawlingAccountIds] = useState<Set<string>>(new Set());
   const [isAddAccountDialogOpen, setAddAccountDialogOpen] = useState(false);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(TABLE_PAGE_SIZE_OPTIONS[0]);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [postsPage, setPostsPage] = useState(1);
+  const [postsPageSize, setPostsPageSize] = useState(THREAD_POSTS_PAGE_SIZE_OPTIONS[0]);
+  const [postsKeyword, setPostsKeyword] = useState('');
+  const [debouncedPostsKeyword, setDebouncedPostsKeyword] = useState('');
+  const [isPinnedFilter, setIsPinnedFilter] = useState(false);
+  const [isReplyFilter, setIsReplyFilter] = useState(false);
+  const [typeFilter, setTypeFilter] = useState<ThreadsPostType | 'ALL'>('ALL');
+  const currentWatchlistAccountId = selectedAccountId ?? threadsAccountId ?? '';
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -163,9 +227,26 @@ export function WatchlistModuleContent({ threadsAccountId }: WatchlistModuleCont
   }, [searchTerm]);
 
   useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setDebouncedPostsKeyword(postsKeyword.trim());
+    }, 400);
+
+    return () => window.clearTimeout(timer);
+  }, [postsKeyword]);
+
+  useEffect(() => {
     setPage(1);
     setSelectedAccountId(null);
     setWatchlistAccounts([]);
+    setCrawlingAccountIds(new Set());
+    setCrawledPosts([]);
+    setPublishingTasks([]);
+    setPostsPage(1);
+    setPostsKeyword('');
+    setDebouncedPostsKeyword('');
+    setIsPinnedFilter(false);
+    setIsReplyFilter(false);
+    setTypeFilter('ALL');
   }, [threadsAccountId]);
 
   const watchlistQuery = useQuery({
@@ -183,6 +264,33 @@ export function WatchlistModuleContent({ threadsAccountId }: WatchlistModuleCont
         threadsAccountId: threadsAccountId ?? '',
       }),
     enabled: Boolean(threadsAccountId),
+    keepPreviousData: true,
+  });
+
+  const threadPostsQuery = useQuery({
+    queryKey: [
+      ...THREAD_POSTS_QUERY_KEY,
+      {
+        threadsWatchlistAccountId: currentWatchlistAccountId,
+        page: postsPage,
+        limit: postsPageSize,
+        keyword: debouncedPostsKeyword,
+        isPinned: isPinnedFilter,
+        isReply: isReplyFilter,
+        type: typeFilter === 'ALL' ? undefined : typeFilter,
+      },
+    ],
+    queryFn: () =>
+      getThreadPosts({
+        page: postsPage,
+        limit: postsPageSize,
+        threadsWatchlistAccountId: currentWatchlistAccountId,
+        keyword: debouncedPostsKeyword || undefined,
+        isPinned: isPinnedFilter,
+        isReply: isReplyFilter,
+        type: typeFilter === 'ALL' ? undefined : typeFilter,
+      }),
+    enabled: Boolean(currentWatchlistAccountId),
     keepPreviousData: true,
   });
 
@@ -218,8 +326,32 @@ export function WatchlistModuleContent({ threadsAccountId }: WatchlistModuleCont
       return;
     }
 
-    setSelectedAccountId(watchlistAccounts[0]?.id ?? null);
-  }, [selectedAccountId, watchlistAccounts]);
+    const matchedFromRoute = threadsAccountId
+      ? watchlistAccounts.find((account) => account.id === threadsAccountId)
+      : null;
+
+    setSelectedAccountId(matchedFromRoute?.id ?? watchlistAccounts[0]?.id ?? null);
+  }, [selectedAccountId, threadsAccountId, watchlistAccounts]);
+
+  useEffect(() => {
+    setPostsPage(1);
+  }, [selectedAccountId]);
+
+  useEffect(() => {
+    if (!currentWatchlistAccountId) {
+      setCrawledPosts([]);
+      return;
+    }
+
+    const posts = threadPostsQuery.data?.data;
+
+    if (!posts) {
+      return;
+    }
+
+    const fallbackWatchlistId = currentWatchlistAccountId || selectedAccountId || '';
+    setCrawledPosts(posts.map((post) => mapThreadPostToCrawledPost(post, fallbackWatchlistId)));
+  }, [currentWatchlistAccountId, selectedAccountId, threadPostsQuery.data]);
 
   const selectedAccount = useMemo(
     () => watchlistAccounts.find((account) => account.id === selectedAccountId) ?? null,
@@ -293,33 +425,81 @@ export function WatchlistModuleContent({ threadsAccountId }: WatchlistModuleCont
   }, []);
 
   const handleTriggerCrawl = useCallback(
-    (threadsAccountId: string) => {
-      const now = new Date().toISOString();
-      setWatchlistAccounts((previous) =>
-        previous.map((account) => (account.id === threadsAccountId ? { ...account, lastCrawledAt: now } : account)),
-      );
+    async (threadsAccountId: string) => {
+      if (!threadsAccountId) {
+        return;
+      }
 
-      const newPost: CrawledPost = {
-        id: createId(),
-        watchlistAccountId: threadsAccountId,
-        content:
-          'Automated crawl detected a trending thread. Summarize insights and confirm if we should spin an owned response.',
-        capturedAt: now,
-        language: 'en',
-        topics: ['watchlist', 'auto-crawl'],
-        mediaType: 'text',
-        status: 'ready',
-        sentiment: 'positive',
-        likes: 320 + Math.floor(Math.random() * 150),
-        replies: 28 + Math.floor(Math.random() * 40),
-        reposts: 45 + Math.floor(Math.random() * 40),
-      };
+      setCrawlingAccountIds((previous) => {
+        const next = new Set(previous);
+        next.add(threadsAccountId);
+        return next;
+      });
 
-      setCrawledPosts((previous) => [newPost, ...previous]);
-      setActiveTab('crawled');
-      setEditorState({ postId: newPost.id, intent: 'edit' });
+      try {
+        const job = await triggerCrawl(threadsAccountId);
+        const now = new Date().toISOString();
+
+        setWatchlistAccounts((previous) =>
+          previous.map((account) => (account.id === threadsAccountId ? { ...account, lastCrawledAt: now } : account)),
+        );
+
+        const newPost: CrawledPost = {
+          id: createId(),
+          watchlistAccountId: threadsAccountId,
+          content:
+            'Automated crawl detected a trending thread. Summarize insights and confirm if we should spin an owned response.',
+          capturedAt: now,
+          language: 'en',
+          topics: ['watchlist', 'auto-crawl'],
+          mediaType: 'text',
+          status: 'ready',
+          sentiment: 'positive',
+          likes: 320 + Math.floor(Math.random() * 150),
+          replies: 28 + Math.floor(Math.random() * 40),
+          reposts: 45 + Math.floor(Math.random() * 40),
+        };
+
+        setCrawledPosts((previous) => [newPost, ...previous]);
+        setActiveTab('crawled');
+        setEditorState({ postId: newPost.id, intent: 'edit' });
+
+        toast.custom(
+          (t) => (
+            <Alert variant="mono" icon="success" onClose={() => toast.dismiss(t)}>
+              <AlertIcon>
+                <RiCheckboxCircleFill />
+              </AlertIcon>
+              <AlertTitle>
+                Crawl job created. Job ID: {job.jobId}, status: {job.status}
+              </AlertTitle>
+            </Alert>
+          ),
+          { duration: 5000 },
+        );
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Failed to trigger crawl. Please try again.';
+
+        toast.custom(
+          (t) => (
+            <Alert variant="mono" icon="destructive" onClose={() => toast.dismiss(t)}>
+              <AlertIcon>
+                <AlertCircle className="size-5" />
+              </AlertIcon>
+              <AlertTitle>{message}</AlertTitle>
+            </Alert>
+          ),
+          { duration: 5000 },
+        );
+      } finally {
+        setCrawlingAccountIds((previous) => {
+          const next = new Set(previous);
+          next.delete(threadsAccountId);
+          return next;
+        });
+      }
     },
-    [],
+    [setActiveTab, setCrawledPosts, setCrawlingAccountIds, setEditorState, setWatchlistAccounts, triggerCrawl],
   );
 
   const handleRemoveAccount = useCallback(() => {
@@ -557,6 +737,35 @@ export function WatchlistModuleContent({ threadsAccountId }: WatchlistModuleCont
     setPage(1);
   }, []);
 
+  const handlePostsPageChange = useCallback((nextPage: number) => {
+    setPostsPage(Math.max(1, nextPage));
+  }, []);
+
+  const handlePostsPageSizeChange = useCallback((nextSize: number) => {
+    setPostsPageSize(nextSize);
+    setPostsPage(1);
+  }, []);
+
+  const handlePostsKeywordChange = useCallback((value: string) => {
+    setPostsKeyword(value);
+    setPostsPage(1);
+  }, []);
+
+  const handlePinnedFilterChange = useCallback((value: boolean) => {
+    setIsPinnedFilter(value);
+    setPostsPage(1);
+  }, []);
+
+  const handleReplyFilterChange = useCallback((value: boolean) => {
+    setIsReplyFilter(value);
+    setPostsPage(1);
+  }, []);
+
+  const handleTypeFilterChange = useCallback((value: ThreadsPostType | 'ALL') => {
+    setTypeFilter(value);
+    setPostsPage(1);
+  }, []);
+
   const watchlistMeta = watchlistQuery.data?.meta ?? {
     page,
     limit: pageSize,
@@ -574,6 +783,18 @@ export function WatchlistModuleContent({ threadsAccountId }: WatchlistModuleCont
       : watchlistQuery.isError && !watchlistQuery.data
         ? (watchlistQuery.error as Error | null)?.message ?? 'Failed to load watchlist accounts.'
         : null;
+
+  const postsMeta =
+    threadPostsQuery.data?.meta ?? {
+      page: postsPage,
+      limit: postsPageSize,
+      totalPages: 1,
+      totalCount: threadPostsQuery.data?.data?.length ?? 0,
+    };
+  const isPostsLoading = threadPostsQuery.isLoading || (!threadPostsQuery.data && threadPostsQuery.isFetching);
+  const postsError = threadPostsQuery.isError ? ((threadPostsQuery.error as Error | null) ?? null) : null;
+  const postsData = threadPostsQuery.data?.data ?? [];
+  const isPostsFetching = threadPostsQuery.isFetching;
 
   useEffect(() => {
     if (watchlistPage > watchlistTotalPages) {
@@ -594,6 +815,7 @@ export function WatchlistModuleContent({ threadsAccountId }: WatchlistModuleCont
           totalCount={watchlistTotalCount}
           isLoading={isWatchlistLoading}
           errorMessage={watchlistErrorMessage}
+          crawlingAccountIds={crawlingAccountIds}
           pageSizeOptions={TABLE_PAGE_SIZE_OPTIONS}
           onSearchQueryChange={handleSearchChange}
           onPageChange={handlePageChange}
@@ -620,11 +842,25 @@ export function WatchlistModuleContent({ threadsAccountId }: WatchlistModuleCont
             </TabsTrigger>
           </TabsList>
           <TabsContent value="crawled" className="mt-6">
-            <CrawledPostsPanel
+            <ThreadsCrawledPostsTable
               account={selectedAccount}
-              posts={selectedAccountPosts}
-              onOpenEditor={(postId, intent) => setEditorState({ postId, intent })}
-              onOpenSchedule={(postId) => openScheduleDialog(postId)}
+              posts={postsData}
+              meta={postsMeta}
+              keyword={postsKeyword}
+              isPinned={isPinnedFilter}
+              isReply={isReplyFilter}
+              type={typeFilter}
+              isLoading={isPostsLoading}
+              isFetching={isPostsFetching}
+              error={postsError}
+              pageSizeOptions={THREAD_POSTS_PAGE_SIZE_OPTIONS}
+              onKeywordChange={handlePostsKeywordChange}
+              onPinnedChange={handlePinnedFilterChange}
+              onReplyChange={handleReplyFilterChange}
+              onTypeChange={handleTypeFilterChange}
+              onPageChange={handlePostsPageChange}
+              onPageSizeChange={handlePostsPageSizeChange}
+              onRetry={currentWatchlistAccountId ? () => threadPostsQuery.refetch() : undefined}
             />
           </TabsContent>
           <TabsContent value="scheduled" className="mt-6">

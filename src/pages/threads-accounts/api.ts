@@ -22,23 +22,6 @@ export const threadsAccountCreateSchema = threadsAccountBaseSchema.extend({
 
 export type ThreadsAccountFormValues = z.infer<typeof threadsAccountBaseSchema>;
 
-export type ThreadsSessionModeSuccessResult = {
-  sessionMode?: string | null;
-  lastLoggedInAt?: string | null;
-  reason?: string | null;
-};
-
-export type ThreadsSessionModeFailureResult = ThreadsSessionModeSuccessResult & {
-  failureInfo?: {
-    errorMessage?: string | null;
-  } | null;
-};
-
-export type ThreadsSessionModeResult = {
-  successResults: ThreadsSessionModeSuccessResult[];
-  failureResults: ThreadsSessionModeFailureResult[];
-};
-
 export type ThreadsAccountType = 'default' | 'watcher';
 
 export type ThreadsAccountRecord = {
@@ -51,8 +34,7 @@ export type ThreadsAccountRecord = {
   categoryName?: string | null;
   watchlistAccountIds?: string[] | null;
   watchlistAccounts?: WatchlistAccountOption[] | null;
-  sessionMode?: ThreadsSessionModeResult | null;
-  sessionModeSortValue?: string | null;
+  lastLoginAt?: string | null;
   status?: string | null;
   isActive?: boolean;
   createdAt?: string | null;
@@ -90,27 +72,7 @@ export type WatchlistAccountOption = {
   username?: string | null;
 };
 
-const normalizeSessionModeString = (value: unknown): string | null => {
-  if (typeof value !== 'string') {
-    return null;
-  }
-
-  const trimmed = value.trim();
-
-  if (!trimmed) {
-    return null;
-  }
-
-  const lowered = trimmed.toLowerCase();
-
-  if (lowered === 'persistent' || lowered === 'ephemeral') {
-    return lowered;
-  }
-
-  return trimmed;
-};
-
-const normalizeSessionModeTimestamp = (value: unknown): string | null => {
+const normalizeTimestampString = (value: unknown): string | null => {
   if (typeof value !== 'string') {
     return null;
   }
@@ -118,233 +80,6 @@ const normalizeSessionModeTimestamp = (value: unknown): string | null => {
   const trimmed = value.trim();
 
   return trimmed || null;
-};
-
-const normalizeSessionReason = (value: unknown): string | null => {
-  if (typeof value !== 'string') {
-    return null;
-  }
-
-  const trimmed = value.trim();
-
-  return trimmed || null;
-};
-
-const normalizeSuccessResultEntry = (entry: unknown): ThreadsSessionModeSuccessResult | null => {
-  if (!entry || typeof entry !== 'object') {
-    return null;
-  }
-
-  const source = entry as Record<string, unknown>;
-
-  const sessionMode = normalizeSessionModeString(
-    source.sessionMode ?? source.session_mode ?? source.mode,
-  );
-  const lastLoggedInAt = normalizeSessionModeTimestamp(
-    source.lastLoggedInAt ??
-      source.last_logged_in_at ??
-      source.lastLoginAt ??
-      source.logged_in_at ??
-      source.loggedInAt,
-  );
-  const reason = normalizeSessionReason(source.reason ?? source.message);
-
-  if (!sessionMode && !lastLoggedInAt && !reason) {
-    return null;
-  }
-
-  return {
-    sessionMode,
-    lastLoggedInAt,
-    reason,
-  };
-};
-
-const normalizeFailureResultEntry = (entry: unknown): ThreadsSessionModeFailureResult | null => {
-  if (!entry || typeof entry !== 'object') {
-    return null;
-  }
-
-  const successPart = normalizeSuccessResultEntry(entry);
-  const failureInfoSource =
-    (entry as Record<string, unknown>).failureInfo ??
-    (entry as Record<string, unknown>).failure_info ??
-    null;
-
-  const failureInfo =
-    failureInfoSource && typeof failureInfoSource === 'object'
-      ? {
-          errorMessage:
-            typeof failureInfoSource.errorMessage === 'string'
-              ? failureInfoSource.errorMessage
-              : typeof (failureInfoSource as Record<string, unknown>).error_message === 'string'
-                ? String((failureInfoSource as Record<string, unknown>).error_message)
-                : undefined,
-        }
-      : undefined;
-
-  const candidate: ThreadsSessionModeFailureResult = {
-    sessionMode: successPart?.sessionMode,
-    lastLoggedInAt: successPart?.lastLoggedInAt,
-    reason: successPart?.reason,
-  };
-
-  if (failureInfo?.errorMessage) {
-    candidate.failureInfo = failureInfo;
-  }
-
-  if (!candidate.sessionMode && !candidate.lastLoggedInAt && !candidate.reason && !candidate.failureInfo) {
-    return null;
-  }
-
-  return candidate;
-};
-
-const normalizeSessionModeResult = (value: unknown): ThreadsSessionModeResult | null => {
-  if (value === null || value === undefined) {
-    return null;
-  }
-
-  if (typeof value === 'string') {
-    const sessionMode = normalizeSessionModeString(value);
-
-    if (!sessionMode) {
-      return null;
-    }
-
-    return {
-      successResults: [{ sessionMode }],
-      failureResults: [],
-    };
-  }
-
-  if (Array.isArray(value)) {
-    const successResults = value
-      .map((entry) => normalizeSuccessResultEntry(entry))
-      .filter((entry): entry is ThreadsSessionModeSuccessResult => Boolean(entry));
-
-    if (successResults.length === 0) {
-      return null;
-    }
-
-    return { successResults, failureResults: [] };
-  }
-
-  if (typeof value !== 'object') {
-    return null;
-  }
-
-  const source = value as Record<string, unknown>;
-
-  const successSource = Array.isArray(source.successResults)
-    ? source.successResults
-    : Array.isArray(source.success_results)
-      ? source.success_results
-      : [];
-  const failureSource = Array.isArray(source.failureResults)
-    ? source.failureResults
-    : Array.isArray(source.failure_results)
-      ? source.failure_results
-      : [];
-
-  const successResults = successSource
-    .map((entry) => normalizeSuccessResultEntry(entry))
-    .filter((entry): entry is ThreadsSessionModeSuccessResult => Boolean(entry));
-
-  const failureResults = failureSource
-    .map((entry) => normalizeFailureResultEntry(entry))
-    .filter((entry): entry is ThreadsSessionModeFailureResult => Boolean(entry));
-
-  if (successResults.length === 0 && failureResults.length === 0) {
-    const fallbackSuccess = normalizeSuccessResultEntry(value);
-
-    if (fallbackSuccess) {
-      return { successResults: [fallbackSuccess], failureResults: [] };
-    }
-
-    const fallbackFailure = normalizeFailureResultEntry(value);
-
-    if (fallbackFailure) {
-      return { successResults: [], failureResults: [fallbackFailure] };
-    }
-
-    return null;
-  }
-
-  return {
-    successResults,
-    failureResults,
-  };
-};
-
-const getComparableTimestamp = (value?: string | null) => {
-  if (!value) {
-    return null;
-  }
-
-  const time = Date.parse(value);
-
-  if (Number.isNaN(time)) {
-    return null;
-  }
-
-  return time;
-};
-
-export const getLatestSessionModeResult = <T extends { lastLoggedInAt?: string | null }>(
-  results?: T[] | null,
-): T | null => {
-  if (!results || results.length === 0) {
-    return null;
-  }
-
-  let latest: T | null = null;
-  let latestTimestamp: number | null = null;
-
-  for (const result of results) {
-    if (!result) {
-      continue;
-    }
-
-    const resultTimestamp = getComparableTimestamp(result.lastLoggedInAt);
-
-    if (!latest) {
-      latest = result;
-      latestTimestamp = resultTimestamp;
-      continue;
-    }
-
-    if (resultTimestamp === null) {
-      if (latestTimestamp === null) {
-        continue;
-      }
-
-      continue;
-    }
-
-    if (latestTimestamp === null || resultTimestamp > latestTimestamp) {
-      latest = result;
-      latestTimestamp = resultTimestamp;
-    }
-  }
-
-  return latest;
-};
-
-export const getSessionModeSortValue = (sessionMode?: ThreadsSessionModeResult | null) => {
-  if (!sessionMode) {
-    return null;
-  }
-
-  const latestSuccess = getLatestSessionModeResult(sessionMode.successResults);
-
-  if (latestSuccess?.lastLoggedInAt) {
-    return latestSuccess.lastLoggedInAt;
-  }
-
-  const latestFailure = getLatestSessionModeResult(sessionMode.failureResults);
-
-  return latestFailure?.lastLoggedInAt ?? null;
 };
 
 async function parseJson(response: Response) {
@@ -423,6 +158,92 @@ const normalizeStatus = (value: unknown) => {
     status: 'Inactive',
     isActive: false,
   };
+};
+
+const getLatestTimestamp = (timestamps: string[]): string | null => {
+  if (timestamps.length === 0) {
+    return null;
+  }
+
+  return timestamps.reduce((latest, current) => {
+    const latestTime = Date.parse(latest);
+    const currentTime = Date.parse(current);
+
+    if (Number.isNaN(latestTime)) {
+      return current;
+    }
+
+    if (Number.isNaN(currentTime)) {
+      return latest;
+    }
+
+    return currentTime > latestTime ? current : latest;
+  });
+};
+
+const resolveLastLoginAt = (record: any): string | null => {
+  const primaryCandidates = [
+    record?.lastLoginAt,
+    record?.last_login_at,
+    record?.lastLoggedInAt,
+    record?.last_logged_in_at,
+    record?.loggedInAt,
+    record?.logged_in_at,
+  ];
+
+  for (const candidate of primaryCandidates) {
+    const normalized = normalizeTimestampString(candidate);
+
+    if (normalized) {
+      return normalized;
+    }
+  }
+
+  const sessionMode = record?.sessionMode ?? record?.session_mode ?? record?.mode;
+  const timestamps: string[] = [];
+  const appendTimestamp = (value: unknown) => {
+    const normalized = normalizeTimestampString(value);
+
+    if (normalized) {
+      timestamps.push(normalized);
+    }
+  };
+  const collectFromEntry = (entry: unknown) => {
+    if (!entry || typeof entry !== 'object') {
+      return;
+    }
+
+    const source = entry as Record<string, unknown>;
+    appendTimestamp(
+      source.lastLoggedInAt ??
+        source.last_logged_in_at ??
+        source.lastLoginAt ??
+        source.loggedInAt ??
+        source.logged_in_at,
+    );
+  };
+
+  if (Array.isArray(sessionMode)) {
+    sessionMode.forEach((entry) => collectFromEntry(entry));
+  } else if (sessionMode && typeof sessionMode === 'object') {
+    collectFromEntry(sessionMode);
+
+    const successResults = Array.isArray((sessionMode as Record<string, unknown>).successResults)
+      ? (sessionMode as Record<string, unknown>).successResults
+      : Array.isArray((sessionMode as Record<string, unknown>).success_results)
+        ? (sessionMode as Record<string, unknown>).success_results
+        : [];
+    const failureResults = Array.isArray((sessionMode as Record<string, unknown>).failureResults)
+      ? (sessionMode as Record<string, unknown>).failureResults
+      : Array.isArray((sessionMode as Record<string, unknown>).failure_results)
+        ? (sessionMode as Record<string, unknown>).failure_results
+        : [];
+
+    successResults.forEach((entry) => collectFromEntry(entry));
+    failureResults.forEach((entry) => collectFromEntry(entry));
+  }
+
+  return getLatestTimestamp(timestamps);
 };
 
 const normalizeThreadsAccountRecord = (record: any): ThreadsAccountRecord => {
@@ -576,10 +397,7 @@ const normalizeThreadsAccountRecord = (record: any): ThreadsAccountRecord => {
     record?.enabled ??
     null;
   const { status, isActive } = normalizeStatus(statusSource);
-  const sessionMode = normalizeSessionModeResult(
-    record?.sessionMode ?? record?.session_mode ?? record?.mode,
-  );
-  const sessionModeSortValue = getSessionModeSortValue(sessionMode);
+  const lastLoginAt = resolveLastLoginAt(record);
   const rawType = typeof record?.type === 'string' ? record.type.trim() : '';
   const loweredType = rawType.toLowerCase();
   const type: ThreadsAccountType | null =
@@ -595,8 +413,7 @@ const normalizeThreadsAccountRecord = (record: any): ThreadsAccountRecord => {
     categoryName: categoryName ? String(categoryName) : null,
     watchlistAccountIds: Array.from(normalizedWatchlistAccountIds),
     watchlistAccounts: normalizedWatchlistAccounts,
-    sessionMode,
-    sessionModeSortValue,
+    lastLoginAt,
     status,
     isActive,
     createdAt: record?.createdAt ?? record?.created_at ?? null,
